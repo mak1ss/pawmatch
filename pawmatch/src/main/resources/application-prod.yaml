@@ -1,0 +1,15 @@
+# Production: all connection settings come from the environment, no defaults.
+spring:
+  datasource:
+    url: ${PAWMATCH_DB_URL}
+    username: ${PAWMATCH_DB_USER}
+    password: ${PAWMATCH_DB_PASSWORD}
+
+springdoc:
+  swagger-ui:
+    enabled: ${PAWMATCH_SWAGGER_ENABLED:false}
+
+management:
+  endpoint:
+    health:
+      show-details: never

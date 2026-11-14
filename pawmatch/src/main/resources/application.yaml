@@ -1,3 +1,43 @@
 spring:
   application:
     name: pawmatch
+  profiles:
+    default: local
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    default-property-inclusion: non_null
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  error:
+    include-stacktrace: never
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui
+  paths-to-match: /api/**
+
+pawmatch:
+  cors:
+    allowed-origins: ${PAWMATCH_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
