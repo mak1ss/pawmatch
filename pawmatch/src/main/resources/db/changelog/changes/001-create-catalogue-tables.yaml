@@ -1,0 +1,100 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-catalogue-dataset
+      author: pawmatch
+      comment: Version of the breed dataset currently loaded. One row per loaded dataset version.
+      changes:
+        - createTable:
+            tableName: catalogue_dataset
+            columns:
+              - column: {name: version, type: VARCHAR(32), constraints: {primaryKey: true, primaryKeyName: pk_catalogue_dataset}}
+              - column: {name: loaded_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: now(), constraints: {nullable: false}}
+
+  - changeSet:
+      id: 001-create-breed
+      author: pawmatch
+      comment: >
+        Breed catalogue. id is an internal surrogate key; slug is the stable business key used in URLs and by the model.
+        Nullable columns mean "unknown", never zero.
+      changes:
+        - createTable:
+            tableName: breed
+            columns:
+              - column: {name: id, type: UUID, defaultValueComputed: gen_random_uuid(), constraints: {primaryKey: true, primaryKeyName: pk_breed}}
+              - column: {name: slug, type: VARCHAR(64), constraints: {nullable: false, unique: true, uniqueConstraintName: uq_breed_slug}}
+              - column: {name: name_en, type: VARCHAR(128), constraints: {nullable: false}}
+              - column: {name: name_uk, type: VARCHAR(128), constraints: {nullable: false}}
+              - column: {name: akc_group, type: VARCHAR(64), constraints: {nullable: false}}
+              - column: {name: size, type: VARCHAR(16), constraints: {nullable: false}}
+              - column: {name: weight, type: VARCHAR(255)}
+              - column: {name: height, type: VARCHAR(255)}
+              - column: {name: life_expectancy, type: VARCHAR(64)}
+              - column: {name: energy_level, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: coat_grooming_frequency, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: shedding_level, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: trainability_level, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: good_with_young_children, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: good_with_other_dogs, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: mental_stimulation_needs, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: barking_level, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: adaptability_level, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: affectionate_with_family, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: openness_to_strangers, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: playfulness_level, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: drooling_level, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: watchdog_protective_nature, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: coat_length, type: VARCHAR(64)}
+              - column: {name: coat_type, type: VARCHAR(64)}
+              - column: {name: alone_tolerance_hours, type: 'NUMERIC(4,1)'}
+              - column: {name: exercise_minutes_per_day, type: INTEGER}
+              - column: {name: novice_suitability, type: INTEGER}
+              - column: {name: good_with_cats, type: INTEGER}
+              - column: {name: source_url, type: VARCHAR(512), constraints: {nullable: false}}
+        - sql:
+            comment: Domain constraints enforced by the database, so an invalid seed fails the migration.
+            sql: >
+              ALTER TABLE breed
+                ADD CONSTRAINT ck_breed_slug CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
+                ADD CONSTRAINT ck_breed_size CHECK (size IN ('XSmall', 'Small', 'Medium', 'Large', 'XLarge')),
+                ADD CONSTRAINT ck_breed_energy_level CHECK (energy_level BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_coat_grooming_frequency CHECK (coat_grooming_frequency BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_shedding_level CHECK (shedding_level BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_trainability_level CHECK (trainability_level BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_good_with_young_children CHECK (good_with_young_children BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_good_with_other_dogs CHECK (good_with_other_dogs BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_mental_stimulation_needs CHECK (mental_stimulation_needs BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_barking_level CHECK (barking_level BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_adaptability_level CHECK (adaptability_level BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_affectionate_with_family CHECK (affectionate_with_family BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_openness_to_strangers CHECK (openness_to_strangers BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_playfulness_level CHECK (playfulness_level BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_drooling_level CHECK (drooling_level BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_watchdog_protective_nature CHECK (watchdog_protective_nature BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_alone_tolerance_hours CHECK (alone_tolerance_hours BETWEEN 0 AND 24),
+                ADD CONSTRAINT ck_breed_exercise_minutes_per_day CHECK (exercise_minutes_per_day BETWEEN 0 AND 1440),
+                ADD CONSTRAINT ck_breed_novice_suitability CHECK (novice_suitability BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_breed_good_with_cats CHECK (good_with_cats BETWEEN 1 AND 5);
+
+  - changeSet:
+      id: 001-create-breed-image
+      author: pawmatch
+      comment: >
+        Photo metadata per breed (at most one). The bytes are stored outside the database; storage_key locates them.
+        Attribution columns are mandatory: we only serve images we're allowed to show.
+      changes:
+        - createTable:
+            tableName: breed_image
+            columns:
+              - column:
+                  name: breed_id
+                  type: UUID
+                  constraints: {primaryKey: true, primaryKeyName: pk_breed_image, foreignKeyName: fk_breed_image_breed, references: breed(id)}
+              - column: {name: storage_key, type: VARCHAR(255), constraints: {nullable: false, unique: true, uniqueConstraintName: uq_breed_image_storage_key}}
+              - column: {name: content_type, type: VARCHAR(32), constraints: {nullable: false}}
+              - column: {name: source_url, type: VARCHAR(512), constraints: {nullable: false}}
+              - column: {name: author, type: VARCHAR(255), constraints: {nullable: false}}
+              - column: {name: license, type: VARCHAR(64), constraints: {nullable: false}}
+        - sql:
+            sql: >
+              ALTER TABLE breed_image
+                ADD CONSTRAINT ck_breed_image_content_type CHECK (content_type IN ('image/webp', 'image/jpeg', 'image/png'));

@@ -1,7 +1,7 @@
 # Local development: Postgres from compose.yaml (`docker compose up -d`).
 spring:
   datasource:
-    url: ${PAWMATCH_DB_URL:jdbc:postgresql://localhost:5432/pawmatch}
+    url: ${PAWMATCH_DB_URL:jdbc:postgresql://localhost:${PAWMATCH_DB_PORT:5433}/pawmatch}
     username: ${PAWMATCH_DB_USER:pawmatch}
     password: ${PAWMATCH_DB_PASSWORD:pawmatch}
 

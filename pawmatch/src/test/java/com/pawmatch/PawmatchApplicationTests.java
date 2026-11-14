@@ -38,4 +38,16 @@ class PawmatchApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.info.title").value("PawMatch API"));
     }
+
+    @Test
+    void breedCatalogueIsServedEndToEnd() throws Exception {
+        mockMvc.perform(get("/api/v1/breeds"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(30));
+        mockMvc.perform(get("/api/v1/breeds/labrador-retriever"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name_uk").value("Лабрадор-ретривер"));
+        mockMvc.perform(get("/api/v1/breeds/labrador-retriever/image"))
+                .andExpect(status().isNotFound());
+    }
 }
