@@ -1,0 +1,7 @@
+# Master changelog. Add new changesets as files under changes/, prefixed with a sortable number,
+# e.g. changes/001-create-breed.yaml. They are applied in file-name order.
+databaseChangeLog:
+  - includeAll:
+      path: changes/
+      relativeToChangelogFile: true
+      errorIfMissingOrEmpty: false
