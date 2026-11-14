@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-load-breed-catalogue-v1.0.0
+      author: pawmatch
+      comment: >
+        Seed the 30-breed catalogue, dataset v1.0.0 (AKC cards prepared by the ML team; provenance stays with the dataset).
+        Later dataset versions must UPDATE rows by slug and INSERT only new breeds. Never delete and re-insert,
+        because breed ids are referenced by other tables.
+      changes:
+        - loadData:
+            tableName: breed
+            file: ../data/breeds-v1.0.0.csv
+            relativeToChangelogFile: true
+            encoding: UTF-8
+            separator: ','
+            quotchar: '"'
+            columns:
+              - column: {name: slug, type: STRING}
+              - column: {name: name_en, type: STRING}
+              - column: {name: name_uk, type: STRING}
+              - column: {name: akc_group, type: STRING}
+              - column: {name: size, type: STRING}
+              - column: {name: weight, type: STRING}
+              - column: {name: height, type: STRING}
+              - column: {name: life_expectancy, type: STRING}
+              - column: {name: energy_level, type: NUMERIC}
+              - column: {name: coat_grooming_frequency, type: NUMERIC}
+              - column: {name: shedding_level, type: NUMERIC}
+              - column: {name: trainability_level, type: NUMERIC}
+              - column: {name: good_with_young_children, type: NUMERIC}
+              - column: {name: good_with_other_dogs, type: NUMERIC}
+              - column: {name: mental_stimulation_needs, type: NUMERIC}
+              - column: {name: barking_level, type: NUMERIC}
+              - column: {name: adaptability_level, type: NUMERIC}
+              - column: {name: affectionate_with_family, type: NUMERIC}
+              - column: {name: openness_to_strangers, type: NUMERIC}
+              - column: {name: playfulness_level, type: NUMERIC}
+              - column: {name: drooling_level, type: NUMERIC}
+              - column: {name: watchdog_protective_nature, type: NUMERIC}
+              - column: {name: coat_length, type: STRING}
+              - column: {name: coat_type, type: STRING}
+              - column: {name: source_url, type: STRING}
+        - insert:
+            tableName: catalogue_dataset
+            columns:
+              - column: {name: version, value: 1.0.0}

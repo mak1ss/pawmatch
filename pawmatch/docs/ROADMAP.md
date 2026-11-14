@@ -49,7 +49,9 @@ the Ridge/ML model.
    running two databases is unnecessary MVP overhead. Store answers and result payloads as `jsonb`.
 3. **Guest session = an unguessable UUID** returned on the first submit. Whoever holds the ID can resubmit answers and
    leave feedback. No PII is collected.
-4. **API style:** REST under `/api/v1`, OpenAPI via springdoc, errors as RFC 9457 `ProblemDetail`, Ukrainian
+4. **Hexagonal architecture.** Each feature module has `domain`, `application` (ports and services) and `adapter`
+   (`in/web`, `out/persistence`, ...) layers. Every feature is checked against the boundary rules in `../CLAUDE.md`.
+5. **API style:** REST under `/api/v1`, OpenAPI via springdoc, errors as RFC 9457 `ProblemDetail`, Ukrainian
    explanation texts, as in the baseline.
 
 ---
@@ -70,16 +72,33 @@ Each milestone ends with something the frontend can call.
 
 ### M1 — Breed catalogue (≈ 2–3 days)
 *Board: Переглянути породи → Відкрити картку породи, Переглянути характеристики.*
-- [ ] Liquibase changelog creates the `breed` table with all `breeds.csv` columns:
-      `breed_id` PK (slug), en/uk names, AKC group, size, weight, height, life expectancy, 14 ordinal 1–5 scores,
-      coat, nullable `alone_tolerance_hours`, `exercise_minutes_per_day`, `novice_suitability` and `good_with_cats`,
-      plus `source_url`, `retrieved_at_utc`, `source_updated_at`, `source_page_sha256`, `review_status` and `dataset_version`.
-- [ ] Seed it with `breeds.csv` v1.0.0. A startup validator applies the same rules as `PawMatch.__init__`:
-      unique non-empty id, size in `XSmall…XLarge`, scores 1–5. A bad catalogue fails fast.
-- [ ] `GET /api/v1/breeds` returns a list with the fields needed for cards.
-- [ ] `GET /api/v1/breeds/{breedId}` returns full characteristics, source and check date.
-- [ ] In-memory catalogue cache, loaded once at startup, used by the matching engine.
-- **Done when:** the frontend can render the catalogue and breed cards from the API.
+- [x] Liquibase creates a `breed` table designed for the app, not mirroring the dataset CSV:
+      - `id uuid` PK (`gen_random_uuid()`), plus `slug` `UNIQUE` as the business key;
+      - en/uk names, AKC group, size, weight, height, life expectancy, coat;
+      - 14 ratings as `integer NOT NULL CHECK 1–5`;
+      - nullable `alone_tolerance_hours`, `exercise_minutes_per_day`, `novice_suitability` and `good_with_cats`
+        (empty in v1.0.0);
+      - `source_url`.
+
+      Dataset provenance (retrieval date, page hash, review status) stays with the dataset, not in the app.
+      `catalogue_dataset` holds the loaded dataset version; `breed_image` holds photo metadata and attribution.
+- [x] Seeded from a trimmed `db/changelog/data/breeds-v1.0.0.csv` via Liquibase `loadData`. Database CHECK and UNIQUE
+      constraints validate it, so a bad seed fails the migration. The in-app mapping also validates every row.
+- [x] `GET /api/v1/breeds` returns a list with the fields needed for cards.
+- [x] `GET /api/v1/breeds/{slug}` returns full characteristics, the source URL and photo attribution.
+      Unknown values are sent as explicit `null`.
+- [x] `GET /api/v1/breeds/{slug}/image` returns the breed photo:
+      - the binary image with the correct `Content-Type` (`image/webp` or `image/jpeg`);
+      - `Cache-Control` and `ETag` headers, so a repeat request gets `304 Not Modified`;
+      - 404 `ProblemDetail` for an unknown breed or a breed without an image.
+      The list and detail responses include `image_url`, pointing at this endpoint, or `null` when there's no image.
+      The image bytes are read through an outbound port, `BreedImageStorage`. The MVP adapter reads bundled files
+      (`catalog/images/<slug>.webp|jpg|png`); the port lets us switch to object storage or a CDN later.
+      Attribution (source, author, licence) lives in `breed_image` and is returned in the detail response.
+      **The photos themselves are still pending** (open question 7).
+- [x] In-memory catalogue cache, loaded once on first access, used by the matching engine.
+- **Done when:** the frontend can render the catalogue and breed cards from the API, **including breed photos**.
+  The DB-backed parts (migration, seed, constraints) are verified in CI only until local Podman networking is fixed.
 
 ### M2 — Questionnaire contract and validation (≈ 2 days)
 *Board: Пройти анкету (columns 4–10), #9643296.*
@@ -185,3 +204,6 @@ we design the schema to allow them but don't build any UI:
 4. **"Started" event for completion rate.** Is it a frontend event or a backend endpoint?
 5. **Frontend stack, origin and hosting target.** These are needed for CORS and the M7 deploy.
 6. **Admin and expert labelling.** Is any of §4 in MVP scope, given that the ML step depends on labels?
+7. **Breed image source and licence.** `breeds.csv` has no image column, and AKC page photos are copyrighted, so we can't
+   reuse them. Who provides the 30 photos, and under which licence? Wikimedia Commons (CC BY / CC BY-SA, with attribution)
+   or team-owned photos are the safe options. This blocks filling in the image endpoint's data, not building the endpoint.
