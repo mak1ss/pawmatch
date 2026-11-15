@@ -1,0 +1,16 @@
+{
+  "activity_level": 5,
+  "shedding_tolerance": 2,
+  "grooming_capacity": 3,
+  "mental_stimulation_capacity": 4,
+  "barking_tolerance": 2,
+  "preferred_size": "any",
+  "has_young_children": true,
+  "has_other_dogs": false,
+  "has_cats": false,
+  "housing_type": "apartment",
+  "walk_minutes_daily": 120,
+  "alone_hours_daily": 3,
+  "owner_experience": "none",
+  "training_minutes_daily": 45.5
+}
