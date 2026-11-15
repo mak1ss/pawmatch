@@ -21,7 +21,12 @@ The index is **not a probability** of success. Every recommendation response mus
 
 The current work. Do not build anything outside this list without being asked.
 
-- **Guest mode only**: no registration, login or profiles. A guest session is identified by an unguessable UUID.
+- **Two scenarios** (team decision 2026-11-15):
+  - **Guest**: questionnaire and recommendations without registering. A guest session is identified by an unguessable
+    UUID. **Guest results are not saved** as history.
+  - **Registered user**: everything a guest can do, plus registration/login/logout, a basic profile, saved results,
+    favourite (saved) breeds and questionnaire history. Endpoints under `/api/v1/me/**` require authentication;
+    guest endpoints never do.
 - **Breed catalogue**: 30 hand-checked AKC breeds (dataset v1.0.0), each with a source URL. Unknown values are `NULL`,
   never `0`, and the API sends them as explicit `null`.
 - **Questionnaire**: 14 required fields, validated server-side. Invalid input returns HTTP 422 with a list of field errors.
@@ -33,7 +38,7 @@ The current work. Do not build anything outside this list without being asked.
 - **Feedback**: anonymous useful / not useful, one per recommendation run.
 - **Monitoring**: p95 latency, error count, fallback count. API target: p95 ≤ 1 s at 10 concurrent requests.
 
-**Out of MVP:** accounts, saved history, favourites, admin panel or auth, catalogue CRUD UI, shelter dogs, premium features,
+**Out of MVP:** admin panel or admin auth, catalogue CRUD UI, shelter dogs, premium features,
 and the trained ML model (Ridge regression). CSV import and expert labels are stretch items that need team agreement.
 
 ## Architecture
@@ -45,9 +50,11 @@ and the trained ML model (Ridge regression). CSV import and expert labels are st
 ```
 com.pawmatch
 ├── catalog         breeds: catalogue, breed cards, breed images, catalogue loader and validator
-├── questionnaire   question definitions, profile, validation (field errors → 422)
-├── recommendation  sessions, answer versions, recommendation runs/items, compare
+├── questionnaire   questionnaire contract (keys, types, ranges, codes), validation (field errors → 422), sessions and versioned answers
+├── recommendation  recommendation runs/items and compare; reads answers via questionnaire's GetLatestAnswersUseCase
 ├── feedback        feedback on recommendation runs
+├── account         user accounts: registration, login/logout, tokens, profile (M7–M8)
+├── shortlist       saved (favourite) breeds of a registered user (M9)
 ├── inference       adapters implementing the ScoringEngine port (stub now; baseline / ML later) + engine router
 └── common          shared kernel (plain-Java exceptions, FieldError) + cross-cutting web config (ProblemDetail, CORS, OpenAPI)
 ```
@@ -79,7 +86,8 @@ Inside every feature module:
 5. Web DTOs live only in `adapter/in/web`. Controllers never return domain objects or JPA entities directly; they map to DTOs.
    Controllers call `port/in` interfaces, never services or repositories.
 6. **Cross-feature access goes through the other feature's `port/in` only.** For example, `recommendation` reads breeds through
-   `catalog`'s use-case port. It never touches another feature's repositories, entities or adapters.
+   `catalog`'s use-case port, and reads answers through `questionnaire`'s `GetLatestAnswersUseCase`. It never touches
+   another feature's repositories, entities or adapters.
 7. The scoring engine is a driven port, `ScoringEngine`, owned by `recommendation.application.port.out`. Implementations
    live in `inference`. Nothing outside `inference` knows which engine is running.
 8. Infrastructure details (file paths, URLs, table names) come from configuration in adapters, never from domain or application code.
@@ -158,7 +166,8 @@ Unknown fields are rejected. All errors are collected before responding.
 - `breed_image` (one per breed: `storage_key`, `content_type`, attribution `source_url`/`author`/`license`); bytes are
   bundled in `src/main/resources/catalog/images`
 - `questionnaire_session`
-- `questionnaire_answers` (versioned, `jsonb`)
+- `questionnaire_answers` (versioned per session, `UNIQUE (session_id, version)`, `questionnaire_version`, answers as
+  canonical snake_case `jsonb`)
 - `recommendation_run` (`result` as `jsonb`, plus model and dataset version, latency, `engine_used`, `fallback_used`)
 - `recommendation_item` (rank, breed, index)
 - `feedback`
@@ -189,8 +198,17 @@ docker compose up -d                # start local Postgres on localhost:5433 (or
 ## Conventions
 
 - REST under `/api/v1`. JSON fields use `snake_case`, to match the model contract.
-  Errors are RFC 9457 `ProblemDetail`; validation errors add `field_errors: [{field, message}]`.
-- User-facing texts (explanations, warnings, validation messages) are in **Ukrainian**. Code, comments and docs are in English.
+  Errors are RFC 9457 `ProblemDetail`; validation errors add `field_errors: [{field, code, message, params?}]`, where
+  `code` is a stable machine-readable code (e.g. `required`, `invalid_integer`), `params` carries `min`/`max`/`allowed`,
+  and `message` is a Ukrainian fallback.
+- **The backend owns contracts and codes; the frontend owns UX copy.** Question wording, labels, sections, ordering,
+  units and help texts live in the frontend, mapped by field key, option code and error code. The backend never
+  serves questionnaire copy. Texts the backend still produces (model explanations and warnings, fallback error
+  messages) are in **Ukrainian**. Code, comments and docs are in English.
+- **OpenAPI docs:** the spec is generated from the controllers (springdoc). Verbose documentation (request schemas for
+  untyped bodies, request/response examples) lives as OpenAPI components in `src/main/resources/openapi/*.yaml`, merged
+  in at startup and referenced from controllers by name (e.g. `@RequestBody(ref = "#/components/requestBodies/...")`).
+  Don't put example payloads in Java. Tests check that schemas match the contract and that examples are valid.
 - All schema changes go through Liquibase changesets. Never use `ddl-auto` in non-test profiles.
 - Never log questionnaire answers or other user input. Log run ID, engine, model version and latency.
 - Every recommendation result stores `model_version` and `dataset_version`, so it can be reproduced.

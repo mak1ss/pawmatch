@@ -1,0 +1,21 @@
+{
+  "activity_level": 4,
+  "shedding_tolerance": 3,
+  "grooming_capacity": 2,
+  "mental_stimulation_capacity": 4,
+  "barking_tolerance": 3,
+  "preferred_size": "Medium",
+  "has_young_children": false,
+  "has_other_dogs": true,
+  "has_cats": true,
+  "housing_type": "house",
+  "walk_minutes_daily": 90,
+  "alone_hours_daily": 6.5,
+  "owner_experience": "some",
+  "training_minutes_daily": 30,
+  "allowed_sizes": ["Small", "Medium", "Large"],
+  "hard_limits": {
+    "shedding_level": 3,
+    "barking_level": 3
+  }
+}

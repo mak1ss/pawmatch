@@ -64,7 +64,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         List<FieldError> errors = ex.getBindingResult().getFieldErrors().stream()
+                // Bean Validation constraint name as the code, e.g. NotNull -> not_null, Max -> max.
                 .map(e -> new FieldError(toSnakeCase(e.getField()),
+                        e.getCode() == null ? "invalid" : toSnakeCase(e.getCode()),
                         Objects.requireNonNullElse(e.getDefaultMessage(), "Некоректне значення.")))
                 .toList();
         return ResponseEntity.unprocessableContent().body(validationProblem(errors));

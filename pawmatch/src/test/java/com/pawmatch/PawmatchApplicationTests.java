@@ -1,6 +1,8 @@
 package com.pawmatch;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -49,5 +52,30 @@ class PawmatchApplicationTests {
                 .andExpect(jsonPath("$.name_uk").value("Лабрадор-ретривер"));
         mockMvc.perform(get("/api/v1/breeds/labrador-retriever/image"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void questionnaireSubmitAndResubmitEndToEnd() throws Exception {
+        String answers = """
+                {"activity_level": 3, "shedding_tolerance": 2, "grooming_capacity": 2, "mental_stimulation_capacity": 3,
+                 "barking_tolerance": 2, "preferred_size": "Small", "has_young_children": true, "has_other_dogs": false,
+                 "has_cats": false, "housing_type": "apartment", "walk_minutes_daily": 60, "alone_hours_daily": 4,
+                 "owner_experience": "none", "training_minutes_daily": 20}""";
+
+        String location = mockMvc.perform(post("/api/v1/sessions").contentType(MediaType.APPLICATION_JSON).content(answers))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.answers_version").value(1))
+                .andReturn().getResponse().getHeader("Location");
+
+        mockMvc.perform(put(location).contentType(MediaType.APPLICATION_JSON)
+                        .content(answers.replace("\"activity_level\": 3", "\"activity_level\": 5")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.answers_version").value(2));
+        mockMvc.perform(get(location))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.answers.activity_level").value(5));
+        mockMvc.perform(post("/api/v1/sessions").contentType(MediaType.APPLICATION_JSON).content("{\"has_cats\": 1}"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.field_errors.length()").value(14));
     }
 }
