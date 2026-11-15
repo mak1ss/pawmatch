@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -49,7 +50,8 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.status").value(422))
                 .andExpect(jsonPath("$.field_errors", hasSize(2)))
                 .andExpect(jsonPath("$.field_errors[*].field",
-                        containsInAnyOrder("activity_level", "has_cats")));
+                        containsInAnyOrder("activity_level", "has_cats")))
+                .andExpect(jsonPath("$.field_errors[*].code", containsInAnyOrder("max", "not_null")));
     }
 
     @Test
@@ -67,6 +69,8 @@ class GlobalExceptionHandlerTest {
         mockMvc.perform(get("/api/test/domain-validation"))
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.field_errors[0].field").value("preferred_size"))
+                .andExpect(jsonPath("$.field_errors[0].code").value("invalid_choice"))
+                .andExpect(jsonPath("$.field_errors[0].params.allowed[0]").value("Small"))
                 .andExpect(jsonPath("$.field_errors[0].message").value("Недопустиме значення."));
     }
 
@@ -134,7 +138,7 @@ class GlobalExceptionHandlerTest {
 
         @GetMapping("/api/test/domain-validation")
         void domainValidation() {
-            throw new RequestValidationException(List.of(new FieldError("preferred_size", "Недопустиме значення.")));
+            throw new RequestValidationException(List.of(new FieldError("preferred_size", "invalid_choice", "Недопустиме значення.", Map.of("allowed", List.of("Small")))));
         }
 
         @GetMapping("/api/test/not-found")
