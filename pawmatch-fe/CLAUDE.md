@@ -76,9 +76,20 @@ Flow for a guest: `POST /sessions` (answers) → `POST /sessions/{id}/recommenda
 
 ## Design
 
-A Figma design is in progress and will be shared. **Until then, keep the UI neutral and simple:** shadcn/ui defaults,
-no invented branding, colours or illustrations. Build components so they can be restyled from design tokens later.
-Mobile-first and accessible: semantic HTML, labelled inputs, keyboard navigation, sufficient contrast.
+**Figma:** file "PawMatch (Copy)", key `hveMQoIPFQwJWekuIBF3i8` (the original file isn't shared with our Figma account).
+Implement from the high-fidelity mockups: `69:1945` "1 Мокапи Гість (MVP)" (guest screens 01–15, e.g. `69:780`
+Головна). Registered-user screens exist only as wireframes (З-01..З-06); admin and future screens are out of MVP.
+
+- **Tokens live in `src/index.css`** (shadcn variables, set from the mockups): cream background `#FFF7EF`, white
+  cards, orange primary `#E9692C`, peach accent `#FDE8D7` with text `#B4501C`, border `#F0E2D4`, text `#2B1E14` /
+  muted `#8B786A`, radius base 14px (cards `rounded-2xl` ≈ 24px, banners and photos `rounded-3xl` ≈ 32px). Font:
+  **Nunito** (`@fontsource-variable/nunito`, with Cyrillic). Use the tokens, never raw hex values in components.
+- **Layout:** 1200px content column (`components/layout/Container`), white header and footer
+  (`SiteHeader`, `SiteFooter`). Buttons use the shadcn `Button` with the PawMatch additions: size `xl` (56px CTA),
+  size `nav` (45px header), variant `outline-primary`.
+- The mockups are desktop-only (1440px) and drawn with absolute positions: translate them into responsive layout.
+  Static images and icons from Figma go to `src/assets/`; never reference Figma's temporary asset URLs.
+- Mobile-first and accessible: semantic HTML, labelled inputs, keyboard navigation, sufficient contrast.
 
 ## Stack (installed)
 
@@ -87,7 +98,7 @@ Mobile-first and accessible: semantic HTML, labelled inputs, keyboard navigation
 - **React Router 8** for routing. Routes live in `src/app/routes.tsx`, shared by the app and tests.
 - **TanStack Query 5** for server state; no extra global store unless a real need appears. Client errors (4xx) are
   never retried.
-- **Tailwind CSS 4 + shadcn/ui 4** (style `radix-nova`, base colour neutral, Lucide icons, Geist font). Add components
+- **Tailwind CSS 4 + shadcn/ui 4** (style `radix-nova`, PawMatch colour tokens, Lucide icons, Nunito font). Add components
   with `npx shadcn@latest add <name>`; they land in `src/components/ui/`. shadcn 4 uses the `cn` package for class
   merging (`@/lib/utils` re-exports it).
 - **React Hook Form** for the questionnaire; client-side checks derived from the contract

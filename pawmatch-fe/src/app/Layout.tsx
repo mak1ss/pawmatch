@@ -1,20 +1,17 @@
-import { Link, Outlet } from 'react-router'
+import { Outlet } from 'react-router'
 
-import { copy } from '@/copy/uk'
+import { SiteFooter } from '@/components/layout/SiteFooter'
+import { SiteHeader } from '@/components/layout/SiteHeader'
 
+/** Page frame: header, full-width page content, footer. Pages place their own content in a `Container`. */
 export function Layout() {
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center px-4 py-3">
-          <Link to="/" className="font-semibold">
-            {copy.app.name}
-          </Link>
-        </div>
-      </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <SiteHeader />
+      <main className="flex-1">
         <Outlet />
       </main>
+      <SiteFooter />
     </div>
   )
 }
