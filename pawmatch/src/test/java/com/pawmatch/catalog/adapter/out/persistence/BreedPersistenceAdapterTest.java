@@ -32,10 +32,12 @@ class BreedPersistenceAdapterTest {
     @Autowired
     BreedImageJpaRepository imageJpaRepository;
     @Autowired
+    CatalogueDatasetJpaRepository datasetJpaRepository;
+    @Autowired
     JdbcTemplate jdbc;
 
     private BreedPersistenceAdapter adapter() {
-        return new BreedPersistenceAdapter(breedJpaRepository, imageJpaRepository);
+        return new BreedPersistenceAdapter(breedJpaRepository, imageJpaRepository, datasetJpaRepository);
     }
 
     @Test
@@ -45,7 +47,7 @@ class BreedPersistenceAdapterTest {
         assertThat(breeds).hasSize(30);
         assertThat(breeds).extracting(Breed::id).doesNotContainNull().doesNotHaveDuplicates();
         assertThat(breeds).extracting(Breed::slug).isSorted();
-        assertThat(jdbc.queryForObject("SELECT version FROM catalogue_dataset", String.class)).isEqualTo("1.0.0");
+        assertThat(adapter().currentDatasetVersion()).isEqualTo("1.0.0");
     }
 
     @Test

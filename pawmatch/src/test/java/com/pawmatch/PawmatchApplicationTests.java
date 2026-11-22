@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,5 +78,30 @@ class PawmatchApplicationTests {
         mockMvc.perform(post("/api/v1/sessions").contentType(MediaType.APPLICATION_JSON).content("{\"has_cats\": 1}"))
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.field_errors.length()").value(14));
+    }
+
+    @Test
+    void recommendationsEndToEnd() throws Exception {
+        String answers = """
+                {"activity_level": 3, "shedding_tolerance": 2, "grooming_capacity": 2, "mental_stimulation_capacity": 3,
+                 "barking_tolerance": 2, "preferred_size": "Small", "has_young_children": true, "has_other_dogs": false,
+                 "has_cats": false, "housing_type": "apartment", "walk_minutes_daily": 60, "alone_hours_daily": 4,
+                 "owner_experience": "none", "training_minutes_daily": 20}""";
+        String sessionId = JsonPath.read(mockMvc.perform(post("/api/v1/sessions")
+                        .contentType(MediaType.APPLICATION_JSON).content(answers))
+                .andReturn().getResponse().getContentAsString(), "$.session_id");
+
+        mockMvc.perform(get("/api/v1/sessions/{id}/recommendations/latest", sessionId))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(post("/api/v1/sessions/{id}/recommendations", sessionId))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.answers_version").value(1))
+                .andExpect(jsonPath("$.dataset_version").value("1.0.0"))
+                .andExpect(jsonPath("$.recommendations.length()").value(5))
+                .andExpect(jsonPath("$.recommendations[0].breed_id").value("cavalier-king-charles-spaniel"))
+                .andExpect(jsonPath("$.recommendations[0].compatibility_index").value(98.0));
+        mockMvc.perform(get("/api/v1/sessions/{id}/recommendations/latest", sessionId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.recommendations[4].breed_id").value("bulldog"));
     }
 }

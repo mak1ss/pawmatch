@@ -1,0 +1,77 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-recommendation-run
+      author: pawmatch
+      comment: >
+        One scoring of a specific answers version against a specific catalogue version. result holds the engine's full
+        output as returned to the client. engine_used / fallback_used record which engine answered.
+      changes:
+        - createTable:
+            tableName: recommendation_run
+            columns:
+              - column: {name: id, type: UUID, constraints: {primaryKey: true, primaryKeyName: pk_recommendation_run}}
+              - column: {name: session_id, type: UUID, constraints: {nullable: false}}
+              - column: {name: answers_version, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: model_version, type: VARCHAR(64), constraints: {nullable: false}}
+              - column: {name: model_type, type: VARCHAR(64), constraints: {nullable: false}}
+              - column:
+                  name: dataset_version
+                  type: VARCHAR(32)
+                  constraints: {nullable: false, foreignKeyName: fk_recommendation_run_dataset, references: catalogue_dataset(version)}
+              - column: {name: engine_used, type: VARCHAR(32), constraints: {nullable: false}}
+              - column: {name: fallback_used, type: BOOLEAN, constraints: {nullable: false}}
+              - column: {name: min_score, type: NUMERIC(4,1), constraints: {nullable: false}}
+              - column: {name: result, type: JSONB, constraints: {nullable: false}}
+              - column: {name: latency_ms, type: INTEGER, constraints: {nullable: false}}
+              - column: {name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: now(), constraints: {nullable: false}}
+        - addForeignKeyConstraint:
+            constraintName: fk_recommendation_run_answers
+            baseTableName: recommendation_run
+            baseColumnNames: session_id, answers_version
+            referencedTableName: questionnaire_answers
+            referencedColumnNames: session_id, version
+        - createIndex:
+            indexName: ix_recommendation_run_session_created
+            tableName: recommendation_run
+            columns:
+              - column: {name: session_id}
+              - column: {name: created_at, descending: true}
+        - sql:
+            sql: >
+              ALTER TABLE recommendation_run
+                ADD CONSTRAINT ck_recommendation_run_latency_ms CHECK (latency_ms >= 0),
+                ADD CONSTRAINT ck_recommendation_run_min_score CHECK (min_score BETWEEN 0 AND 100),
+                ADD CONSTRAINT ck_recommendation_run_result_object CHECK (jsonb_typeof(result) = 'object');
+
+  - changeSet:
+      id: 004-create-recommendation-item
+      author: pawmatch
+      comment: One recommended breed of a run, by rank. Kept relational for metrics, feedback and Precision@3 later.
+      changes:
+        - createTable:
+            tableName: recommendation_item
+            columns:
+              - column: {name: id, type: UUID, constraints: {primaryKey: true, primaryKeyName: pk_recommendation_item}}
+              - column:
+                  name: run_id
+                  type: UUID
+                  constraints: {nullable: false, foreignKeyName: fk_recommendation_item_run, references: recommendation_run(id)}
+              - column: {name: rank, type: INTEGER, constraints: {nullable: false}}
+              - column:
+                  name: breed_id
+                  type: UUID
+                  constraints: {nullable: false, foreignKeyName: fk_recommendation_item_breed, references: breed(id)}
+              - column: {name: compatibility_index, type: NUMERIC(4,1), constraints: {nullable: false}}
+        - addUniqueConstraint:
+            tableName: recommendation_item
+            columnNames: run_id, rank
+            constraintName: uq_recommendation_item_run_rank
+        - addUniqueConstraint:
+            tableName: recommendation_item
+            columnNames: run_id, breed_id
+            constraintName: uq_recommendation_item_run_breed
+        - sql:
+            sql: >
+              ALTER TABLE recommendation_item
+                ADD CONSTRAINT ck_recommendation_item_rank CHECK (rank BETWEEN 1 AND 5),
+                ADD CONSTRAINT ck_recommendation_item_compatibility_index CHECK (compatibility_index BETWEEN 0 AND 100);

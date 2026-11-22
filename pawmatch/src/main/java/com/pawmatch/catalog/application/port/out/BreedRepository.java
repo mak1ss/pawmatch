@@ -12,4 +12,7 @@ public interface BreedRepository {
     List<Breed> findAll();
 
     Optional<Breed> findBySlug(String slug);
+
+    /** Version of the loaded breed dataset (the latest row of {@code catalogue_dataset}). */
+    String currentDatasetVersion();
 }
