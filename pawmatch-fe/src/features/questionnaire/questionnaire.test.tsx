@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw'
 
 import { API_BASE_URL } from '@/api/client'
 import { copy } from '@/copy/uk'
-import { readGuestSessionId } from '@/features/questionnaire/guestSession'
+import { readGuestSessionId, saveGuestSessionId } from '@/features/questionnaire/guestSession'
 import { recommendationRun } from '@/mocks/fixtures/recommendations'
 import { MOCK_SESSION_ID } from '@/mocks/handlers'
 import { server } from '@/mocks/server'
@@ -153,6 +153,28 @@ describe('questionnaire', () => {
     expect(put?.sessionId).toBe(MOCK_SESSION_ID)
     expect(put?.body).toMatchObject({ housing_type: 'apartment' })
     expect(posts).toBe(2)
+  })
+
+  it('restores the answers of the current session after a page reload', async () => {
+    saveGuestSessionId(MOCK_SESSION_ID)
+    renderRoute('/questionnaire/review')
+
+    expect(await screen.findByRole('heading', { level: 1, name: t.review.title })).toBeInTheDocument()
+    expect(screen.getByText('Квартира')).toBeInTheDocument()
+    expect(screen.getByText('6 год на день')).toBeInTheDocument()
+  })
+
+  it('starts empty and forgets the session when it has expired', async () => {
+    saveGuestSessionId(MOCK_SESSION_ID)
+    server.use(
+      http.get(`${API_BASE_URL}/api/v1/sessions/:sessionId/answers`, () =>
+        HttpResponse.json({ status: 404, title: 'Not Found' }, { status: 404 }),
+      ),
+    )
+    renderRoute('/questionnaire/review')
+
+    expect(await screen.findByRole('heading', { level: 1, name: t.steps.housing.title })).toBeInTheDocument()
+    expect(readGuestSessionId()).toBeNull()
   })
 
   it('shows every 422 field error in our wording, linked to its step', async () => {

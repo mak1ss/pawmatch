@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 
 import { ApiError, apiFetch } from '@/api/client'
 
@@ -83,5 +83,21 @@ export function useSubmitAnswers() {
       }
       return apiFetch<SubmittedAnswers>('/api/v1/sessions', { method: 'POST', body })
     },
+  })
+}
+
+/** GET /sessions/{id}/answers: the session's latest answers, in the same shape they were submitted. */
+export interface SessionAnswers extends SubmittedAnswers {
+  answers: AnswersPayload
+}
+
+export const sessionAnswersKey = (sessionId: string) => ['questionnaire', 'answers', sessionId] as const
+
+/** The latest answers of a guest session, to restore the form after a page reload. A 404 means it expired. */
+export function sessionAnswersQuery(sessionId: string) {
+  return queryOptions({
+    queryKey: sessionAnswersKey(sessionId),
+    staleTime: Infinity,
+    queryFn: () => apiFetch<SessionAnswers>(`/api/v1/sessions/${encodeURIComponent(sessionId)}/answers`),
   })
 }

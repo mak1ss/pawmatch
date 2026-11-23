@@ -2,6 +2,7 @@ import type { QuestionnaireContract } from '@/api/questionnaire'
 import type { QuestionnaireValues } from '@/features/questionnaire/model'
 import {
   firstIncompleteStep,
+  fromPayload,
   initialValues,
   optionCodes,
   questionForError,
@@ -105,5 +106,15 @@ describe('questionnaire model', () => {
     expect(questionForError(error('allowed_sizes'))).toBe('preferred_size')
     expect(questionForError(error('hard_limits.barking_level'))).toBe('barking_tolerance')
     expect(questionForError(error('dog_name'))).toBeNull()
+  })
+
+  it('restores the form from stored answers, the inverse of toPayload', () => {
+    const values = {
+      ...answered,
+      strict: { allowed_sizes: true, shedding_level: true, coat_grooming_frequency: false, barking_level: true },
+    }
+
+    expect(fromPayload(toPayload(values))).toEqual(values)
+    expect(fromPayload(toPayload(answered))).toEqual(answered)
   })
 })

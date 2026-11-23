@@ -203,3 +203,33 @@ export function questionForError(error: FieldError): AnswerKey | null {
 export function stepIndexOf(field: AnswerKey): number {
   return steps.findIndex((step) => step.questions.some((question) => question.field === field))
 }
+
+/**
+ * Restores form values from stored answers (the inverse of toPayload). The UI ties each hard limit to its question's
+ * answer, so a stored limit only switches its checkbox on.
+ */
+export function fromPayload(answers: AnswersPayload): QuestionnaireValues {
+  const limits = answers.hard_limits ?? {}
+  return {
+    housing_type: answers.housing_type,
+    alone_hours_daily: answers.alone_hours_daily,
+    activity_level: answers.activity_level,
+    walk_minutes_daily: answers.walk_minutes_daily,
+    has_young_children: answers.has_young_children,
+    has_other_dogs: answers.has_other_dogs,
+    has_cats: answers.has_cats,
+    owner_experience: answers.owner_experience,
+    training_minutes_daily: answers.training_minutes_daily,
+    mental_stimulation_capacity: answers.mental_stimulation_capacity,
+    preferred_size: answers.preferred_size,
+    shedding_tolerance: answers.shedding_tolerance,
+    grooming_capacity: answers.grooming_capacity,
+    barking_tolerance: answers.barking_tolerance,
+    strict: {
+      allowed_sizes: (answers.allowed_sizes?.length ?? 0) > 0,
+      shedding_level: 'shedding_level' in limits,
+      coat_grooming_frequency: 'coat_grooming_frequency' in limits,
+      barking_level: 'barking_level' in limits,
+    },
+  }
+}
