@@ -64,7 +64,7 @@
     --muted-foreground: #8b786a;    /* secondary text */
     --accent: #fde8d7;              /* peach: tags, icon circles, logo mark */
     --accent-foreground: #b4501c;   /* text on peach */
-    --destructive: oklch(0.577 0.245 27.325);
+    --destructive: #d93025;         /* form errors (Figma screen 08) */
     --border: #f0e2d4;              /* dividers, card and outlined-button borders */
     --input: #f0e2d4;
     --ring: #e9692c;
