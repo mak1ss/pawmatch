@@ -4,7 +4,7 @@ import { useFormContext } from 'react-hook-form'
 import { Link, Navigate, useNavigate } from 'react-router'
 
 import { ApiError } from '@/api/client'
-import { useSubmitAnswers } from '@/api/questionnaire'
+import { sessionAnswersQuery, useSubmitAnswers } from '@/api/questionnaire'
 import { recommendationKeys } from '@/api/recommendations'
 import type { FieldError } from '@/api/types'
 import { paths } from '@/app/routePaths'
@@ -50,9 +50,12 @@ export function QuestionnaireReviewPage() {
 
   const onSubmit = () => {
     setServerErrors([])
-    submit.mutate({ answers: toPayload(values), sessionId: readGuestSessionId() }, {
+    const answers = toPayload(values)
+    submit.mutate({ answers, sessionId: readGuestSessionId() }, {
       onSuccess: (session) => {
         saveGuestSessionId(session.session_id)
+        // A later restore (after a reload) must see these answers, not older cached ones.
+        queryClient.setQueryData(sessionAnswersQuery(session.session_id).queryKey, { ...session, answers })
         // Results computed from older answers must not be shown from the cache.
         queryClient.removeQueries({ queryKey: recommendationKeys.session(session.session_id) })
         navigate(paths.results, { state: { answersVersion: session.answers_version } })

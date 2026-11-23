@@ -33,12 +33,13 @@ Screens, following the story map's journey:
 | Landing | Ознайомитися з PawMatch | What the service does; start the questionnaire |
 | Questionnaire | Пройти анкету | 14 required answers plus 2 optional constraints; client-side checks from the contract; show every 422 field error at once |
 | Results | Отримати рекомендації | 3–5 breeds sorted by index; "index, not probability" notice; if fewer than 3, show the backend `notice`; reasons and warnings per breed; optional useful / not-useful feedback; "change answers" recomputes |
-| Breed catalogue and card | Переглянути породи | All characteristics; unknown values arrive as `null` and are shown as "unknown", never as 0; source link (AKC) |
+| Breed card | Переглянути породи | Opened from the results ("Детальніше") and from compare, not from a catalogue page; all characteristics; unknown values arrive as `null` and are shown as "unknown", never as 0; source link (AKC) |
 | Compare | Порівняти породи | 2–5 breeds side by side; an excluded breed shows its reason and no index |
 | Account | Реєстрація / вхід | Register, log in, log out |
 | Profile, history, saved breeds | Керувати профілем / результатами | Registered users only |
 
-**Out of MVP:** admin panel, shelter dogs, premium features.
+**Out of MVP:** admin panel (including the breed catalogue list: on the story map, "Переглянути каталог" is an
+administrator story awaiting team agreement), shelter dogs, premium features.
 
 ## Backend API
 
@@ -52,7 +53,7 @@ Screens, following the story map's journey:
 |---|---|---|
 | Breeds | `GET /breeds`, `GET /breeds/{slug}`, `GET /breeds/{slug}/image` | ✅ built (no photos loaded yet: `image_url` is `null`) |
 | Questionnaire | `GET /questionnaire` (contract), `POST /sessions`, `PUT /sessions/{id}/answers`, `GET /sessions/{id}/answers` | ✅ built |
-| Recommendations | `POST /sessions/{id}/recommendations`, `GET /sessions/{id}/recommendations/latest` | ⏳ M3, in progress |
+| Recommendations | `POST /sessions/{id}/recommendations`, `GET /sessions/{id}/recommendations/latest` | ✅ built |
 | Compare | `POST /sessions/{id}/compare` | ❌ M4 |
 | Feedback | `POST /recommendations/{run_id}/feedback` | ❌ M5 |
 | Auth, profile, history, saved breeds | `/auth/*`, `/me`, `/me/questionnaires`, `/me/saved-breeds` | ❌ M7–M9 |

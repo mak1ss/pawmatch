@@ -5,14 +5,17 @@ import { Container } from '@/components/layout/Container'
 import { Button } from '@/components/ui/button'
 import { copy } from '@/copy/uk'
 import { ContractContext } from '@/features/questionnaire/contractContext'
+import { useRestoringAnswers } from '@/features/questionnaire/restoringAnswers'
 
 const t = copy.questionnaire
 
 /** Parent route of all questionnaire screens: loads the contract once. The answers form lives in AnswersFormLayout. */
 export function QuestionnaireLayout() {
   const contract = useQuestionnaireContract()
+  // Wait for restored answers too: otherwise the review would send a reloading visitor back to step 1.
+  const restoring = useRestoringAnswers()
 
-  if (contract.isPending) {
+  if (contract.isPending || restoring) {
     return (
       <Container className="py-16">
         <p role="status" className="text-lg text-muted-foreground">
