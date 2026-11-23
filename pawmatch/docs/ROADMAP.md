@@ -31,7 +31,7 @@ The MVP supports **two scenarios**:
 | Two scenarios, guest and registered (team decision 2026-11-15; board "ЗАРЕЄСТРОВАНИЙ КОРИСТУВАЧ" columns 22–35) | Every guest endpoint keeps working without auth. Registration, login, logout, profile, saved results, favourite breeds and questionnaire history are added for authenticated users (M7–M9). The same questionnaire and recommendation endpoints serve both: with a valid token the run is linked to the user. |
 | Guest results are not saved (team decision) | Guest runs are kept only as **anonymous technical records** (needed for recompute within the visit, feedback and metrics) and are never retrievable as history. See open question 8. |
 | 3–5 breeds, threshold ≥ 60, sorted by index (#9643228, #9643300) | `limit=5`, `min_score=60`. If fewer than 3 breeds pass, return only the ones that pass, with a notice. Never pad the list with weak matches. |
-| "Index, not probability" (#9643299) | Every response carries `score_meaning`. |
+| "Index, not probability" (#9643299) | Every recommendation run response carries `score_meaning`. The compare screen shows the disclaimer from frontend copy. |
 | Fallback to baseline if ML unavailable (#9643298) | Build a `ScoringEngine` seam and a fallback metric now. In the MVP the baseline is the only engine. |
 | 12–15 required questions, field-level errors (#9643296) | Server-side validation returns HTTP 422 with a list of field errors. |
 | Change answers → recompute (#9643297) | Answers are versioned per guest session. Each change creates a new recommendation run. |
@@ -196,9 +196,17 @@ The `questionnaire` module owns sessions and answers. Other modules read answers
 
 ### M4 — Compare breeds (≈ 1–2 days)
 *Board: Порівняти породи (columns 18–20).*
-- [ ] `POST /api/v1/sessions/{id}/compare` with `{breedIds: [2..5]}` scores each breed against the latest answers.
-      Excluded breeds show their reason and no index, as in Python `compare`.
-- [ ] Validation: 2–5 unique breed IDs that exist in the catalogue.
+- [x] `POST /api/v1/sessions/{id}/compare` with `{"breed_ids": [2..5 slugs]}` scores each breed against the latest
+      answers (read through `GetLatestAnswersUseCase`) and returns 200 with the breeds in the requested order.
+      - Excluded breeds have `eligible: false`, their `exclusion_reasons` and `compatibility_index: null`, as in Python
+        `compare`; their factors are still returned for the per-criterion view.
+      - **Not stored** (team decision 2026-11-23): no table, a log line with ids and latency only.
+      - No recommendation run is needed first, so the frontend can compare from the catalogue too.
+      - No `score_meaning` or `unassessed_criteria`: the response matches Python `compare`, and the frontend shows the
+        "index, not a probability" disclaimer from its own copy.
+- [x] Validation: 2–5 unique breed slugs that exist in the catalogue, unknown fields rejected. 422 collects every
+      problem on `breed_ids` (`required`, `invalid_list`, `invalid_count` with `min`/`max`, `duplicate_value` with
+      `duplicates`, `unknown_breed` with `unknown`) plus `unknown_field`. An unknown session gets 404.
 - **Done when:** the frontend can show a side-by-side comparison with per-factor match.
 
 ### M5 — Feedback (≈ 1 day)

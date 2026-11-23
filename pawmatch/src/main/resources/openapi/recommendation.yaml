@@ -1,9 +1,49 @@
-# OpenAPI components for the recommendation endpoints, merged into the generated spec by OpenApiConfig.
-# The example is the real baseline output for the questionnaire example profile
-# (docs/examples/questionnaire-sessions/01-submit-required-only.json), reshaped as an API response.
-# OpenApiRecommendationDocsTest checks it still deserializes into the response type.
+# OpenAPI components for the recommendation and compare endpoints, merged into the generated spec by OpenApiConfig.
+# The examples are real baseline output for the questionnaire example profile
+# (docs/examples/questionnaire-sessions/01-submit-required-only.json), reshaped as API responses.
+# RecommendationOpenApiDocsTest and CompareOpenApiDocsTest check they still deserialize into the response types.
 
 {
+  "schemas": {
+    "CompareRequest": {
+      "type": "object",
+      "description": "Breeds to compare against the session's latest answers. Unknown fields are rejected; every problem is reported at once in a 422 response (codes: required, unknown_field, invalid_list, invalid_count, duplicate_value, unknown_breed).",
+      "additionalProperties": false,
+      "required": [
+        "breed_ids"
+      ],
+      "properties": {
+        "breed_ids": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "description": "Breed ids (slugs) from the catalogue, the same breed_id the recommendations return. The response keeps this order.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "requestBodies": {
+    "CompareBreeds": {
+      "required": true,
+      "description": "The breeds to compare.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/CompareRequest"
+          },
+          "examples": {
+            "three-breeds": {
+              "$ref": "#/components/examples/CompareRequest"
+            }
+          }
+        }
+      }
+    }
+  },
   "examples": {
     "RecommendationRun": {
       "summary": "Recommendations for the example profile (all 14 required answers)",
@@ -465,6 +505,293 @@
             "reasons": [
               "Оцінка взаємодії з малими дітьми нижча за поріг прототипу 3/5."
             ]
+          }
+        ]
+      }
+    },
+    "CompareRequest": {
+      "summary": "Two recommended breeds and one the example profile excludes",
+      "value": {
+        "breed_ids": [
+          "cavalier-king-charles-spaniel",
+          "labrador-retriever",
+          "chihuahua"
+        ]
+      }
+    },
+    "Comparison": {
+      "summary": "Comparison for the example profile: Chihuahua is excluded (young children), so it has no index",
+      "value": {
+        "session_id": "0193a1ef-9e10-7c3a-9b00-000000000001",
+        "answers_version": 1,
+        "model_version": "pawmatch-baseline-1.0.0",
+        "dataset_version": "1.0.0",
+        "breeds": [
+          {
+            "breed_id": "cavalier-king-charles-spaniel",
+            "breed_name": "Кавалер-кінг-чарльз-спанієль",
+            "breed_name_en": "Cavalier King Charles Spaniel",
+            "eligible": true,
+            "exclusion_reasons": [],
+            "compatibility_index": 98.0,
+            "factors": [
+              {
+                "criterion": "activity",
+                "label": "Активність",
+                "breed_value": 3,
+                "profile_value": 3,
+                "match": 1.0,
+                "weight": 3.0,
+                "explanation": "Активність породи — 3/5, бажаний рівень — 3/5."
+              },
+              {
+                "criterion": "shedding",
+                "label": "Линяння",
+                "breed_value": 2,
+                "profile_value": 2,
+                "match": 1.0,
+                "weight": 2.0,
+                "explanation": "Линяння: оцінка породи — 2/5, ваша допустима межа — 2/5."
+              },
+              {
+                "criterion": "grooming",
+                "label": "Догляд за шерстю",
+                "breed_value": 2,
+                "profile_value": 2,
+                "match": 1.0,
+                "weight": 2.0,
+                "explanation": "Догляд за шерстю: оцінка породи — 2/5, ваша допустима межа — 2/5."
+              },
+              {
+                "criterion": "mental_stimulation",
+                "label": "Розумові заняття",
+                "breed_value": 3,
+                "profile_value": 3,
+                "match": 1.0,
+                "weight": 2.0,
+                "explanation": "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5."
+              },
+              {
+                "criterion": "barking",
+                "label": "Вокалізація",
+                "breed_value": 3,
+                "profile_value": 2,
+                "match": 0.75,
+                "weight": 1.0,
+                "explanation": "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5."
+              },
+              {
+                "criterion": "size",
+                "label": "Розмір",
+                "breed_value": "Small",
+                "profile_value": "Small",
+                "match": 1.0,
+                "weight": 1.0,
+                "explanation": "Розмір за AKC — Small; бажаний — Small."
+              },
+              {
+                "criterion": "young_children",
+                "label": "Взаємодія з малими дітьми",
+                "breed_value": 5,
+                "profile_value": true,
+                "match": 1.0,
+                "weight": 1.5,
+                "explanation": "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."
+              }
+            ],
+            "reasons": [
+              "Активність породи — 3/5, бажаний рівень — 3/5.",
+              "Линяння: оцінка породи — 2/5, ваша допустима межа — 2/5.",
+              "Догляд за шерстю: оцінка породи — 2/5, ваша допустима межа — 2/5.",
+              "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5.",
+              "Розмір за AKC — Small; бажаний — Small.",
+              "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."
+            ],
+            "warnings": [
+              "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5.",
+              "Породні оцінки описують тенденції; поведінка конкретної собаки може відрізнятися.",
+              "Навіть висока породна оцінка не замінює нагляду дорослого при взаємодії з дітьми."
+            ],
+            "source_url": "https://www.akc.org/dog-breeds/cavalier-king-charles-spaniel/",
+            "image_url": null
+          },
+          {
+            "breed_id": "labrador-retriever",
+            "breed_name": "Лабрадор-ретривер",
+            "breed_name_en": "Labrador Retriever",
+            "eligible": true,
+            "exclusion_reasons": [],
+            "compatibility_index": 70.0,
+            "factors": [
+              {
+                "criterion": "activity",
+                "label": "Активність",
+                "breed_value": 5,
+                "profile_value": 3,
+                "match": 0.5,
+                "weight": 3.0,
+                "explanation": "Активність породи — 5/5, бажаний рівень — 3/5."
+              },
+              {
+                "criterion": "shedding",
+                "label": "Линяння",
+                "breed_value": 4,
+                "profile_value": 2,
+                "match": 0.5,
+                "weight": 2.0,
+                "explanation": "Линяння: оцінка породи — 4/5, ваша допустима межа — 2/5."
+              },
+              {
+                "criterion": "grooming",
+                "label": "Догляд за шерстю",
+                "breed_value": 2,
+                "profile_value": 2,
+                "match": 1.0,
+                "weight": 2.0,
+                "explanation": "Догляд за шерстю: оцінка породи — 2/5, ваша допустима межа — 2/5."
+              },
+              {
+                "criterion": "mental_stimulation",
+                "label": "Розумові заняття",
+                "breed_value": 4,
+                "profile_value": 3,
+                "match": 0.75,
+                "weight": 2.0,
+                "explanation": "Розумові заняття: оцінка породи — 4/5, ваша допустима межа — 3/5."
+              },
+              {
+                "criterion": "barking",
+                "label": "Вокалізація",
+                "breed_value": 3,
+                "profile_value": 2,
+                "match": 0.75,
+                "weight": 1.0,
+                "explanation": "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5."
+              },
+              {
+                "criterion": "size",
+                "label": "Розмір",
+                "breed_value": "Large",
+                "profile_value": "Small",
+                "match": 0.5,
+                "weight": 1.0,
+                "explanation": "Розмір за AKC — Large; бажаний — Small."
+              },
+              {
+                "criterion": "young_children",
+                "label": "Взаємодія з малими дітьми",
+                "breed_value": 5,
+                "profile_value": true,
+                "match": 1.0,
+                "weight": 1.5,
+                "explanation": "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."
+              }
+            ],
+            "reasons": [
+              "Догляд за шерстю: оцінка породи — 2/5, ваша допустима межа — 2/5.",
+              "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."
+            ],
+            "warnings": [
+              "Активність породи — 5/5, бажаний рівень — 3/5.",
+              "Линяння: оцінка породи — 4/5, ваша допустима межа — 2/5.",
+              "Розмір за AKC — Large; бажаний — Small.",
+              "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5.",
+              "Розумові заняття: оцінка породи — 4/5, ваша допустима межа — 3/5.",
+              "Породні оцінки описують тенденції; поведінка конкретної собаки може відрізнятися.",
+              "Навіть висока породна оцінка не замінює нагляду дорослого при взаємодії з дітьми."
+            ],
+            "source_url": "https://www.akc.org/dog-breeds/labrador-retriever/",
+            "image_url": null
+          },
+          {
+            "breed_id": "chihuahua",
+            "breed_name": "Чихуахуа",
+            "breed_name_en": "Chihuahua",
+            "eligible": false,
+            "exclusion_reasons": [
+              "Оцінка взаємодії з малими дітьми нижча за поріг прототипу 3/5."
+            ],
+            "compatibility_index": null,
+            "factors": [
+              {
+                "criterion": "activity",
+                "label": "Активність",
+                "breed_value": 4,
+                "profile_value": 3,
+                "match": 0.75,
+                "weight": 3.0,
+                "explanation": "Активність породи — 4/5, бажаний рівень — 3/5."
+              },
+              {
+                "criterion": "shedding",
+                "label": "Линяння",
+                "breed_value": 2,
+                "profile_value": 2,
+                "match": 1.0,
+                "weight": 2.0,
+                "explanation": "Линяння: оцінка породи — 2/5, ваша допустима межа — 2/5."
+              },
+              {
+                "criterion": "grooming",
+                "label": "Догляд за шерстю",
+                "breed_value": 1,
+                "profile_value": 2,
+                "match": 1.0,
+                "weight": 2.0,
+                "explanation": "Догляд за шерстю: оцінка породи — 1/5, ваша допустима межа — 2/5."
+              },
+              {
+                "criterion": "mental_stimulation",
+                "label": "Розумові заняття",
+                "breed_value": 3,
+                "profile_value": 3,
+                "match": 1.0,
+                "weight": 2.0,
+                "explanation": "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5."
+              },
+              {
+                "criterion": "barking",
+                "label": "Вокалізація",
+                "breed_value": 5,
+                "profile_value": 2,
+                "match": 0.25,
+                "weight": 1.0,
+                "explanation": "Вокалізація: оцінка породи — 5/5, ваша допустима межа — 2/5."
+              },
+              {
+                "criterion": "size",
+                "label": "Розмір",
+                "breed_value": "XSmall",
+                "profile_value": "Small",
+                "match": 0.75,
+                "weight": 1.0,
+                "explanation": "Розмір за AKC — XSmall; бажаний — Small."
+              },
+              {
+                "criterion": "young_children",
+                "label": "Взаємодія з малими дітьми",
+                "breed_value": 1,
+                "profile_value": true,
+                "match": 0.0,
+                "weight": 1.5,
+                "explanation": "Взаємодія з малими дітьми: породна оцінка 1/5; потрібна оцінка конкретної собаки та нагляд."
+              }
+            ],
+            "reasons": [
+              "Линяння: оцінка породи — 2/5, ваша допустима межа — 2/5.",
+              "Догляд за шерстю: оцінка породи — 1/5, ваша допустима межа — 2/5.",
+              "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5."
+            ],
+            "warnings": [
+              "Взаємодія з малими дітьми: породна оцінка 1/5; потрібна оцінка конкретної собаки та нагляд.",
+              "Вокалізація: оцінка породи — 5/5, ваша допустима межа — 2/5.",
+              "Активність породи — 4/5, бажаний рівень — 3/5.",
+              "Розмір за AKC — XSmall; бажаний — Small.",
+              "Породні оцінки описують тенденції; поведінка конкретної собаки може відрізнятися.",
+              "Навіть висока породна оцінка не замінює нагляду дорослого при взаємодії з дітьми."
+            ],
+            "source_url": "https://www.akc.org/dog-breeds/chihuahua/",
+            "image_url": null
           }
         ]
       }
