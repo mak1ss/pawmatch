@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -36,7 +37,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Runs against PostgreSQL with the real migrations. Not transactional per test, because the concurrency test needs
- * real commits; tables are cleaned after each test.
+ * real commits; each test deletes the sessions it created (the test database is shared).
  */
 @Tag("docker")
 @DataJpaTest
@@ -53,15 +54,26 @@ class QuestionnaireSessionPersistenceAdapterTest {
     @Autowired
     PlatformTransactionManager transactionManager;
 
+    /** Sessions created by the current test. Only these are cleaned up: the test database is shared. */
+    private final List<UUID> createdSessions = new CopyOnWriteArrayList<>();
+
     @AfterEach
     void cleanUp() {
-        jdbc.update("DELETE FROM questionnaire_answers");
-        jdbc.update("DELETE FROM questionnaire_session");
+        for (UUID sessionId : createdSessions) {
+            jdbc.update("DELETE FROM questionnaire_answers WHERE session_id = ?", sessionId);
+            jdbc.update("DELETE FROM questionnaire_session WHERE id = ?", sessionId);
+        }
+    }
+
+    private SubmittedAnswers create(Answers answers, String questionnaireVersion) {
+        SubmittedAnswers stored = adapter.createSession(answers, questionnaireVersion);
+        createdSessions.add(stored.sessionId());
+        return stored;
     }
 
     @Test
     void createsSessionWithVersionOneAndUuidV7() {
-        SubmittedAnswers stored = adapter.createSession(TestAnswers.valid(), "1.0.0");
+        SubmittedAnswers stored = create(TestAnswers.valid(), "1.0.0");
 
         assertThat(stored.version()).isEqualTo(1);
         assertThat(stored.sessionId().version()).isEqualTo(7);
@@ -70,7 +82,7 @@ class QuestionnaireSessionPersistenceAdapterTest {
 
     @Test
     void appendsIncreasingVersionsAndReturnsTheLatest() {
-        UUID sessionId = adapter.createSession(TestAnswers.valid(), "1.0.0").sessionId();
+        UUID sessionId = create(TestAnswers.valid(), "1.0.0").sessionId();
         adapter.appendAnswers(sessionId, withActivity(4), "1.0.0");
         SubmittedAnswers third = adapter.appendAnswers(sessionId, withActivity(5), "1.0.0").orElseThrow();
 
@@ -94,7 +106,7 @@ class QuestionnaireSessionPersistenceAdapterTest {
         raw.put("hard_limits", Map.of("energy_level", 3));
         Answers answers = AnswersParser.parse(raw);
 
-        UUID sessionId = adapter.createSession(answers, "1.0.0").sessionId();
+        UUID sessionId = create(answers, "1.0.0").sessionId();
 
         assertThat(adapter.findLatest(sessionId).orElseThrow().answers()).isEqualTo(answers);
         assertThat(jdbc.queryForObject("SELECT answers ->> 'preferred_size' FROM questionnaire_answers WHERE session_id = ?",
@@ -105,7 +117,7 @@ class QuestionnaireSessionPersistenceAdapterTest {
 
     @Test
     void concurrentResubmitsGetDistinctVersions() throws Exception {
-        UUID sessionId = adapter.createSession(TestAnswers.valid(), "1.0.0").sessionId();
+        UUID sessionId = create(TestAnswers.valid(), "1.0.0").sessionId();
         Callable<Integer> resubmit = () -> adapter.appendAnswers(sessionId, withActivity(4), "1.0.0").orElseThrow().version();
 
         List<Integer> versions;
@@ -125,7 +137,7 @@ class QuestionnaireSessionPersistenceAdapterTest {
 
     @Test
     void databaseRejectsDuplicateVersionAndInvalidRows() {
-        UUID sessionId = adapter.createSession(TestAnswers.valid(), "1.0.0").sessionId();
+        UUID sessionId = create(TestAnswers.valid(), "1.0.0").sessionId();
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
 
         assertThatThrownBy(() -> tx.executeWithoutResult(s -> jdbc.update("""

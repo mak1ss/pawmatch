@@ -31,6 +31,11 @@ class BreedCatalogServiceTest {
         public Optional<Breed> findBySlug(String slug) {
             return Optional.ofNullable(breeds.get(slug));
         }
+
+        @Override
+        public String currentDatasetVersion() {
+            return "1.0.0";
+        }
     };
     private final BreedImageStorage storage = key -> Optional.ofNullable(files.get(key));
     private final BreedCatalogService service = new BreedCatalogService(repository, storage);

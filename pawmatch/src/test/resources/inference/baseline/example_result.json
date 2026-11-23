@@ -1,0 +1,186 @@
+{
+  "model_version": "pawmatch-baseline-1.0.0",
+  "model_type": "weighted_rule_based_baseline",
+  "score_meaning": "Індекс відповідності за оціненими критеріями, не ймовірність успіху.",
+  "min_score": 60,
+  "catalogue_breeds": 30,
+  "eligible_breeds": 29,
+  "above_threshold": 29,
+  "recommendations": [
+    {
+      "breed_id": "cavalier-king-charles-spaniel",
+      "breed_name": "Кавалер-кінг-чарльз-спанієль",
+      "breed_name_en": "Cavalier King Charles Spaniel",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "compatibility_index": 98.0,
+      "factors": [
+        {"criterion": "activity", "label": "Активність", "breed_value": 3, "profile_value": 3, "match": 1.0, "weight": 3.0, "explanation": "Активність породи — 3/5, бажаний рівень — 3/5."},
+        {"criterion": "shedding", "label": "Линяння", "breed_value": 2, "profile_value": 2, "match": 1.0, "weight": 2.0, "explanation": "Линяння: оцінка породи — 2/5, ваша допустима межа — 2/5."},
+        {"criterion": "grooming", "label": "Догляд за шерстю", "breed_value": 2, "profile_value": 2, "match": 1.0, "weight": 2.0, "explanation": "Догляд за шерстю: оцінка породи — 2/5, ваша допустима межа — 2/5."},
+        {"criterion": "mental_stimulation", "label": "Розумові заняття", "breed_value": 3, "profile_value": 3, "match": 1.0, "weight": 2.0, "explanation": "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5."},
+        {"criterion": "barking", "label": "Вокалізація", "breed_value": 3, "profile_value": 2, "match": 0.75, "weight": 1.0, "explanation": "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5."},
+        {"criterion": "size", "label": "Розмір", "breed_value": "Small", "profile_value": "Small", "match": 1.0, "weight": 1.0, "explanation": "Розмір за AKC — Small; бажаний — Small."},
+        {"criterion": "young_children", "label": "Взаємодія з малими дітьми", "breed_value": 5, "profile_value": true, "match": 1.0, "weight": 1.5, "explanation": "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."}
+      ],
+      "reasons": [
+        "Активність породи — 3/5, бажаний рівень — 3/5.",
+        "Линяння: оцінка породи — 2/5, ваша допустима межа — 2/5.",
+        "Догляд за шерстю: оцінка породи — 2/5, ваша допустима межа — 2/5.",
+        "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5.",
+        "Розмір за AKC — Small; бажаний — Small.",
+        "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."
+      ],
+      "warnings": [
+        "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5.",
+        "Породні оцінки описують тенденції; поведінка конкретної собаки може відрізнятися.",
+        "Навіть висока породна оцінка не замінює нагляду дорослого при взаємодії з дітьми."
+      ],
+      "source_url": "https://www.akc.org/dog-breeds/cavalier-king-charles-spaniel/",
+      "dataset_version": "1.0.0",
+      "source_retrieved_at_utc": "2026-10-26T11:17:34.468377+00:00"
+    },
+    {
+      "breed_id": "french-bulldog",
+      "breed_name": "Французький бульдог",
+      "breed_name_en": "French Bulldog",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "compatibility_index": 96.0,
+      "factors": [
+        {"criterion": "activity", "label": "Активність", "breed_value": 3, "profile_value": 3, "match": 1.0, "weight": 3.0, "explanation": "Активність породи — 3/5, бажаний рівень — 3/5."},
+        {"criterion": "shedding", "label": "Линяння", "breed_value": 3, "profile_value": 2, "match": 0.75, "weight": 2.0, "explanation": "Линяння: оцінка породи — 3/5, ваша допустима межа — 2/5."},
+        {"criterion": "grooming", "label": "Догляд за шерстю", "breed_value": 1, "profile_value": 2, "match": 1.0, "weight": 2.0, "explanation": "Догляд за шерстю: оцінка породи — 1/5, ваша допустима межа — 2/5."},
+        {"criterion": "mental_stimulation", "label": "Розумові заняття", "breed_value": 3, "profile_value": 3, "match": 1.0, "weight": 2.0, "explanation": "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5."},
+        {"criterion": "barking", "label": "Вокалізація", "breed_value": 1, "profile_value": 2, "match": 1.0, "weight": 1.0, "explanation": "Вокалізація: оцінка породи — 1/5, ваша допустима межа — 2/5."},
+        {"criterion": "size", "label": "Розмір", "breed_value": "Small", "profile_value": "Small", "match": 1.0, "weight": 1.0, "explanation": "Розмір за AKC — Small; бажаний — Small."},
+        {"criterion": "young_children", "label": "Взаємодія з малими дітьми", "breed_value": 5, "profile_value": true, "match": 1.0, "weight": 1.5, "explanation": "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."}
+      ],
+      "reasons": [
+        "Активність породи — 3/5, бажаний рівень — 3/5.",
+        "Догляд за шерстю: оцінка породи — 1/5, ваша допустима межа — 2/5.",
+        "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5.",
+        "Вокалізація: оцінка породи — 1/5, ваша допустима межа — 2/5.",
+        "Розмір за AKC — Small; бажаний — Small.",
+        "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."
+      ],
+      "warnings": [
+        "Линяння: оцінка породи — 3/5, ваша допустима межа — 2/5.",
+        "Породні оцінки описують тенденції; поведінка конкретної собаки може відрізнятися.",
+        "Навіть висока породна оцінка не замінює нагляду дорослого при взаємодії з дітьми."
+      ],
+      "source_url": "https://www.akc.org/dog-breeds/french-bulldog/",
+      "dataset_version": "1.0.0",
+      "source_retrieved_at_utc": "2026-10-26T11:17:30.702818+00:00"
+    },
+    {
+      "breed_id": "shih-tzu",
+      "breed_name": "Ши-тцу",
+      "breed_name_en": "Shih Tzu",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "compatibility_index": 90.0,
+      "factors": [
+        {"criterion": "activity", "label": "Активність", "breed_value": 3, "profile_value": 3, "match": 1.0, "weight": 3.0, "explanation": "Активність породи — 3/5, бажаний рівень — 3/5."},
+        {"criterion": "shedding", "label": "Линяння", "breed_value": 1, "profile_value": 2, "match": 1.0, "weight": 2.0, "explanation": "Линяння: оцінка породи — 1/5, ваша допустима межа — 2/5."},
+        {"criterion": "grooming", "label": "Догляд за шерстю", "breed_value": 4, "profile_value": 2, "match": 0.5, "weight": 2.0, "explanation": "Догляд за шерстю: оцінка породи — 4/5, ваша допустима межа — 2/5."},
+        {"criterion": "mental_stimulation", "label": "Розумові заняття", "breed_value": 3, "profile_value": 3, "match": 1.0, "weight": 2.0, "explanation": "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5."},
+        {"criterion": "barking", "label": "Вокалізація", "breed_value": 3, "profile_value": 2, "match": 0.75, "weight": 1.0, "explanation": "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5."},
+        {"criterion": "size", "label": "Розмір", "breed_value": "Small", "profile_value": "Small", "match": 1.0, "weight": 1.0, "explanation": "Розмір за AKC — Small; бажаний — Small."},
+        {"criterion": "young_children", "label": "Взаємодія з малими дітьми", "breed_value": 5, "profile_value": true, "match": 1.0, "weight": 1.5, "explanation": "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."}
+      ],
+      "reasons": [
+        "Активність породи — 3/5, бажаний рівень — 3/5.",
+        "Линяння: оцінка породи — 1/5, ваша допустима межа — 2/5.",
+        "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5.",
+        "Розмір за AKC — Small; бажаний — Small.",
+        "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."
+      ],
+      "warnings": [
+        "Догляд за шерстю: оцінка породи — 4/5, ваша допустима межа — 2/5.",
+        "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5.",
+        "Породні оцінки описують тенденції; поведінка конкретної собаки може відрізнятися.",
+        "Навіть висока породна оцінка не замінює нагляду дорослого при взаємодії з дітьми."
+      ],
+      "source_url": "https://www.akc.org/dog-breeds/shih-tzu/",
+      "dataset_version": "1.0.0",
+      "source_retrieved_at_utc": "2026-10-26T11:17:33.605941+00:00"
+    },
+    {
+      "breed_id": "boxer",
+      "breed_name": "Боксер",
+      "breed_name_en": "Boxer",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "compatibility_index": 84.0,
+      "factors": [
+        {"criterion": "activity", "label": "Активність", "breed_value": 4, "profile_value": 3, "match": 0.75, "weight": 3.0, "explanation": "Активність породи — 4/5, бажаний рівень — 3/5."},
+        {"criterion": "shedding", "label": "Линяння", "breed_value": 2, "profile_value": 2, "match": 1.0, "weight": 2.0, "explanation": "Линяння: оцінка породи — 2/5, ваша допустима межа — 2/5."},
+        {"criterion": "grooming", "label": "Догляд за шерстю", "breed_value": 2, "profile_value": 2, "match": 1.0, "weight": 2.0, "explanation": "Догляд за шерстю: оцінка породи — 2/5, ваша допустима межа — 2/5."},
+        {"criterion": "mental_stimulation", "label": "Розумові заняття", "breed_value": 4, "profile_value": 3, "match": 0.75, "weight": 2.0, "explanation": "Розумові заняття: оцінка породи — 4/5, ваша допустима межа — 3/5."},
+        {"criterion": "barking", "label": "Вокалізація", "breed_value": 3, "profile_value": 2, "match": 0.75, "weight": 1.0, "explanation": "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5."},
+        {"criterion": "size", "label": "Розмір", "breed_value": "Large", "profile_value": "Small", "match": 0.5, "weight": 1.0, "explanation": "Розмір за AKC — Large; бажаний — Small."},
+        {"criterion": "young_children", "label": "Взаємодія з малими дітьми", "breed_value": 5, "profile_value": true, "match": 1.0, "weight": 1.5, "explanation": "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."}
+      ],
+      "reasons": [
+        "Линяння: оцінка породи — 2/5, ваша допустима межа — 2/5.",
+        "Догляд за шерстю: оцінка породи — 2/5, ваша допустима межа — 2/5.",
+        "Взаємодія з малими дітьми: породна оцінка 5/5; потрібна оцінка конкретної собаки та нагляд."
+      ],
+      "warnings": [
+        "Розмір за AKC — Large; бажаний — Small.",
+        "Активність породи — 4/5, бажаний рівень — 3/5.",
+        "Вокалізація: оцінка породи — 3/5, ваша допустима межа — 2/5.",
+        "Розумові заняття: оцінка породи — 4/5, ваша допустима межа — 3/5.",
+        "Породні оцінки описують тенденції; поведінка конкретної собаки може відрізнятися.",
+        "Навіть висока породна оцінка не замінює нагляду дорослого при взаємодії з дітьми."
+      ],
+      "source_url": "https://www.akc.org/dog-breeds/boxer/",
+      "dataset_version": "1.0.0",
+      "source_retrieved_at_utc": "2026-10-26T11:17:38.739881+00:00"
+    },
+    {
+      "breed_id": "bulldog",
+      "breed_name": "Бульдог",
+      "breed_name_en": "Bulldog",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "compatibility_index": 84.0,
+      "factors": [
+        {"criterion": "activity", "label": "Активність", "breed_value": 3, "profile_value": 3, "match": 1.0, "weight": 3.0, "explanation": "Активність породи — 3/5, бажаний рівень — 3/5."},
+        {"criterion": "shedding", "label": "Линяння", "breed_value": 3, "profile_value": 2, "match": 0.75, "weight": 2.0, "explanation": "Линяння: оцінка породи — 3/5, ваша допустима межа — 2/5."},
+        {"criterion": "grooming", "label": "Догляд за шерстю", "breed_value": 3, "profile_value": 2, "match": 0.75, "weight": 2.0, "explanation": "Догляд за шерстю: оцінка породи — 3/5, ваша допустима межа — 2/5."},
+        {"criterion": "mental_stimulation", "label": "Розумові заняття", "breed_value": 3, "profile_value": 3, "match": 1.0, "weight": 2.0, "explanation": "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5."},
+        {"criterion": "barking", "label": "Вокалізація", "breed_value": 2, "profile_value": 2, "match": 1.0, "weight": 1.0, "explanation": "Вокалізація: оцінка породи — 2/5, ваша допустима межа — 2/5."},
+        {"criterion": "size", "label": "Розмір", "breed_value": "Medium", "profile_value": "Small", "match": 0.75, "weight": 1.0, "explanation": "Розмір за AKC — Medium; бажаний — Small."},
+        {"criterion": "young_children", "label": "Взаємодія з малими дітьми", "breed_value": 3, "profile_value": true, "match": 0.5, "weight": 1.5, "explanation": "Взаємодія з малими дітьми: породна оцінка 3/5; потрібна оцінка конкретної собаки та нагляд."}
+      ],
+      "reasons": [
+        "Активність породи — 3/5, бажаний рівень — 3/5.",
+        "Розумові заняття: оцінка породи — 3/5, ваша допустима межа — 3/5.",
+        "Вокалізація: оцінка породи — 2/5, ваша допустима межа — 2/5."
+      ],
+      "warnings": [
+        "Взаємодія з малими дітьми: породна оцінка 3/5; потрібна оцінка конкретної собаки та нагляд.",
+        "Догляд за шерстю: оцінка породи — 3/5, ваша допустима межа — 2/5.",
+        "Линяння: оцінка породи — 3/5, ваша допустима межа — 2/5.",
+        "Розмір за AKC — Medium; бажаний — Small.",
+        "Породні оцінки описують тенденції; поведінка конкретної собаки може відрізнятися.",
+        "Навіть висока породна оцінка не замінює нагляду дорослого при взаємодії з дітьми."
+      ],
+      "source_url": "https://www.akc.org/dog-breeds/bulldog/",
+      "dataset_version": "1.0.0",
+      "source_retrieved_at_utc": "2026-10-26T11:17:31.744994+00:00"
+    }
+  ],
+  "notice": "Порівняйте потреби рекомендованих порід перед вибором.",
+  "unassessed_criteria": [
+    "Час прогулянок: немає перевірених породних норм у хвилинах.",
+    "Години самотності: немає перевірених породних меж.",
+    "Час навчання та досвід власника: не підміняються оцінкою trainability.",
+    "Тип житла: придатність не виводиться лише з розміру породи."
+  ],
+  "excluded": [
+    {"breed_id": "chihuahua", "reasons": ["Оцінка взаємодії з малими дітьми нижча за поріг прототипу 3/5."]}
+  ]
+}

@@ -31,12 +31,16 @@ class BreedPersistenceAdapter implements BreedRepository {
 
     private final BreedJpaRepository breedJpaRepository;
     private final BreedImageJpaRepository imageJpaRepository;
+    private final CatalogueDatasetJpaRepository datasetJpaRepository;
 
     private volatile Map<String, Breed> breedsBySlug;
+    private volatile String datasetVersion;
 
-    BreedPersistenceAdapter(BreedJpaRepository breedJpaRepository, BreedImageJpaRepository imageJpaRepository) {
+    BreedPersistenceAdapter(BreedJpaRepository breedJpaRepository, BreedImageJpaRepository imageJpaRepository,
+                            CatalogueDatasetJpaRepository datasetJpaRepository) {
         this.breedJpaRepository = breedJpaRepository;
         this.imageJpaRepository = imageJpaRepository;
+        this.datasetJpaRepository = datasetJpaRepository;
     }
 
     @Override
@@ -47,6 +51,19 @@ class BreedPersistenceAdapter implements BreedRepository {
     @Override
     public Optional<Breed> findBySlug(String slug) {
         return Optional.ofNullable(snapshot().get(slug));
+    }
+
+    /** Cached like the breeds: the dataset version only changes through migrations. */
+    @Override
+    public String currentDatasetVersion() {
+        String current = datasetVersion;
+        if (current == null) {
+            current = datasetJpaRepository.findFirstByOrderByLoadedAtDescVersionDesc()
+                    .map(CatalogueDatasetJpaEntity::getVersion)
+                    .orElseThrow(() -> new IllegalStateException("No breed dataset loaded (catalogue_dataset is empty)"));
+            datasetVersion = current;
+        }
+        return current;
     }
 
     private Map<String, Breed> snapshot() {

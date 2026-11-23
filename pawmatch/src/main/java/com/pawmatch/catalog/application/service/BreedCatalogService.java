@@ -3,6 +3,7 @@ package com.pawmatch.catalog.application.service;
 import java.util.List;
 
 import com.pawmatch.catalog.application.port.in.GetBreedImageUseCase;
+import com.pawmatch.catalog.application.port.in.GetCatalogueVersionUseCase;
 import com.pawmatch.catalog.application.port.in.GetBreedUseCase;
 import com.pawmatch.catalog.application.port.in.ListBreedsUseCase;
 import com.pawmatch.catalog.application.port.out.BreedImageStorage;
@@ -14,7 +15,8 @@ import com.pawmatch.common.kernel.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-class BreedCatalogService implements ListBreedsUseCase, GetBreedUseCase, GetBreedImageUseCase {
+class BreedCatalogService
+        implements ListBreedsUseCase, GetBreedUseCase, GetBreedImageUseCase, GetCatalogueVersionUseCase {
 
     private final BreedRepository breedRepository;
     private final BreedImageStorage imageStorage;
@@ -33,6 +35,11 @@ class BreedCatalogService implements ListBreedsUseCase, GetBreedUseCase, GetBree
     public Breed getBreed(String slug) {
         return breedRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("breed", slug));
+    }
+
+    @Override
+    public String getCatalogueVersion() {
+        return breedRepository.currentDatasetVersion();
     }
 
     @Override

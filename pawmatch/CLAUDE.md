@@ -97,17 +97,24 @@ When adding or reviewing a feature:
 - check every new import against the rules above;
 - flag any violation instead of working around it.
 
-### Inference module (stub for now)
+### Inference module
 
-- All matching goes through the `ScoringEngine` port: `recommend(profile, limit, minScore)` and `compare(profile, breedIds)`.
-- **For now the only implementation is a stub.** How we integrate the real baseline is not decided yet. The options are a Java
-  port, or a Python service wrapping `pawmatch.py`. Do not implement the scoring algorithm until asked.
-- The stub must return the real response shape, so the rest of the system and the frontend can be built against it:
-  - `model_version`, `model_type`, `score_meaning`, `min_score`;
-  - `recommendations[]`, where each item has `breed_id`, names, `compatibility_index`, `factors[]`, `reasons[]`, `warnings[]` and source;
-  - `notice`, `unassessed_criteria[]`, `excluded[]`.
-- An engine router will try the primary engine and fall back to a secondary one, recording `engine_used` and `fallback_used`
-  and a `pawmatch.recommendation.fallback` metric.
+- All matching goes through the `ScoringEngine` port (`recommendation.application.port.out`):
+  `recommend(profile, breeds, limit, minScore)` and `compare(profile, breeds)`.
+- **Engines are pure.** The recommendation service reads answers and breeds through the other modules' ports and passes
+  the engine plain inputs: `ScoringProfile` and `BreedFeatures` (in `recommendation.domain`). Engines never call other
+  modules; a future ML engine gets the same input contract.
+- `inference.baseline.BaselineEngine` is the **Java port of `pawmatch-baseline-1.0.0`**. It must match the Python
+  reference exactly: `BaselineParityTest` compares it on generated golden cases from `tools/baseline-parity`
+  (regenerate the goldens with `python tools/baseline-parity/generate_goldens.py` after changing the baseline or the
+  seed catalogue). Texts live in `BaselineTexts`.
+- Agreed differences from the Python output: no per-breed provenance (`source_retrieved_at_utc`, per-breed
+  `dataset_version`; the run stores `dataset_version`), and `excluded` is sorted by breed id.
+- `inference.routing.EngineRouter` is the `ScoringEngine` bean: it calls the primary engine
+  (`pawmatch.inference.primary`, default `baseline`) and, if configured, falls back to `pawmatch.inference.fallback`
+  on an exception, reporting `engine_used`/`fallback_used` and counting `pawmatch.recommendation.fallback`. No fallback
+  engine in the MVP.
+- Recommendation limits are product rules in `RecommendationPolicy` (at most 5 breeds, index ≥ 60).
 
 ### Reference: the team's baseline (`pawmatch-baseline-1.0.0`, owned by Ihor)
 
@@ -168,8 +175,9 @@ Unknown fields are rejected. All errors are collected before responding.
 - `questionnaire_session`
 - `questionnaire_answers` (versioned per session, `UNIQUE (session_id, version)`, `questionnaire_version`, answers as
   canonical snake_case `jsonb`)
-- `recommendation_run` (`result` as `jsonb`, plus model and dataset version, latency, `engine_used`, `fallback_used`)
-- `recommendation_item` (rank, breed, index)
+- `recommendation_run` (`result` as `jsonb`, model version and type, `dataset_version` FK, latency, `engine_used`,
+  `fallback_used`; composite FK `(session_id, answers_version)` → `questionnaire_answers`)
+- `recommendation_item` (rank 1–5, `breed_id` FK, index; unique per run by rank and by breed)
 - `feedback`
 - Later: `expert_label` (0 / 0.5 / 1), needed to train the ML model and to measure Precision@3 / NDCG@5.
 
