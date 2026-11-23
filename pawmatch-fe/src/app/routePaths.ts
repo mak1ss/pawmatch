@@ -3,6 +3,10 @@ export const paths = {
   home: '/',
   howItWorks: '/#how-it-works',
   questionnaire: '/questionnaire',
+  /** Step numbers are 1-based, as shown to the user. */
+  questionnaireStep: (step: number) => `/questionnaire/step/${step}`,
+  questionnaireReview: '/questionnaire/review',
+  results: '/results',
   compare: '/compare',
   login: '/login',
 } as const

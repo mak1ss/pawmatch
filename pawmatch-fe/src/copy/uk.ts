@@ -1,9 +1,11 @@
+import { questionnaireCopy } from '@/copy/questionnaire.uk'
+
 /**
  * Ukrainian UX copy. The frontend owns all wording; the backend only sends keys and codes.
- * Landing, header and footer copy follows the Figma guest mockups. Questionnaire copy (by field key, option code and
- * error code) will be added per feature.
+ * Landing, header and footer copy follows the Figma guest mockups; per-feature copy lives in its own file here.
  */
 export const copy = {
+  questionnaire: questionnaireCopy,
   app: {
     name: 'PawMatch',
     tagline: 'Підбір породи собаки під ваш спосіб життя',

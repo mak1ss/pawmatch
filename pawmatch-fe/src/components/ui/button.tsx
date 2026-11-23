@@ -30,6 +30,7 @@ const buttonVariants = cva(
         lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
         // PawMatch: 45px header button and 56px call-to-action button, bold text (Figma guest mockups).
         nav: "h-11 gap-1.5 px-6 text-[15px] font-bold",
+        form: "h-[52px] min-w-[140px] gap-2 px-8 text-base font-bold",
         xl: "h-14 gap-2 px-7 text-base font-bold",
         icon: "size-8",
         "icon-xs":
