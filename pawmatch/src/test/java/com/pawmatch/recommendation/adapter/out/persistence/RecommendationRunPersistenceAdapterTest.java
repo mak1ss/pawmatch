@@ -69,18 +69,25 @@ class RecommendationRunPersistenceAdapterTest {
         assertThat(adapter.findLatestBySessionId(UUID.randomUUID())).isEmpty();
     }
 
+    // The test transaction defers INSERTs (ids are generated in the app), so flush to make the database check them.
+    // In production the adapter's own transaction commits, which surfaces the same violation.
     @Test
     void runMustReferenceAnExistingAnswersVersion() {
-        assertThatThrownBy(() -> adapter.save(run(2, "beagle", beagleId)))
+        assertThatThrownBy(() -> saveAndFlush(run(2, "beagle", beagleId)))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("fk_recommendation_run_answers");
     }
 
     @Test
     void itemMustReferenceAnExistingBreed() {
-        assertThatThrownBy(() -> adapter.save(run(1, "ghost", UUID.randomUUID())))
+        assertThatThrownBy(() -> saveAndFlush(run(1, "ghost", UUID.randomUUID())))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("fk_recommendation_item_breed");
+    }
+
+    private void saveAndFlush(RecommendationRun run) {
+        adapter.save(run);
+        runs.flush();
     }
 
     private RecommendationRun run(int answersVersion, String slug, UUID breedUuid) {

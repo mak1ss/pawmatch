@@ -20,7 +20,7 @@ databaseChangeLog:
                   constraints: {nullable: false, foreignKeyName: fk_recommendation_run_dataset, references: catalogue_dataset(version)}
               - column: {name: engine_used, type: VARCHAR(32), constraints: {nullable: false}}
               - column: {name: fallback_used, type: BOOLEAN, constraints: {nullable: false}}
-              - column: {name: min_score, type: NUMERIC(4,1), constraints: {nullable: false}}
+              - column: {name: min_score, type: "NUMERIC(4,1)", constraints: {nullable: false}}
               - column: {name: result, type: JSONB, constraints: {nullable: false}}
               - column: {name: latency_ms, type: INTEGER, constraints: {nullable: false}}
               - column: {name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: now(), constraints: {nullable: false}}
@@ -61,7 +61,7 @@ databaseChangeLog:
                   name: breed_id
                   type: UUID
                   constraints: {nullable: false, foreignKeyName: fk_recommendation_item_breed, references: breed(id)}
-              - column: {name: compatibility_index, type: NUMERIC(4,1), constraints: {nullable: false}}
+              - column: {name: compatibility_index, type: "NUMERIC(4,1)", constraints: {nullable: false}}
         - addUniqueConstraint:
             tableName: recommendation_item
             columnNames: run_id, rank
