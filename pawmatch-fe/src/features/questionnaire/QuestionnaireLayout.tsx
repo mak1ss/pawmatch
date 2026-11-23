@@ -1,4 +1,3 @@
-import { FormProvider, useForm } from 'react-hook-form'
 import { Outlet } from 'react-router'
 
 import { useQuestionnaireContract } from '@/api/questionnaire'
@@ -6,17 +5,11 @@ import { Container } from '@/components/layout/Container'
 import { Button } from '@/components/ui/button'
 import { copy } from '@/copy/uk'
 import { ContractContext } from '@/features/questionnaire/contractContext'
-import type { QuestionnaireValues } from '@/features/questionnaire/model'
-import { initialValues } from '@/features/questionnaire/model'
 
 const t = copy.questionnaire
 
-/**
- * Parent route of all questionnaire screens: loads the contract once and keeps the answers in one form, so they
- * survive moving between steps. Answers live in memory only and are never logged.
- */
+/** Parent route of all questionnaire screens: loads the contract once. The answers form lives in AnswersFormLayout. */
 export function QuestionnaireLayout() {
-  const form = useForm<QuestionnaireValues>({ defaultValues: initialValues })
   const contract = useQuestionnaireContract()
 
   if (contract.isPending) {
@@ -43,10 +36,8 @@ export function QuestionnaireLayout() {
   }
 
   return (
-    <FormProvider {...form}>
-      <ContractContext value={contract.data}>
-        <Outlet />
-      </ContractContext>
-    </FormProvider>
+    <ContractContext value={contract.data}>
+      <Outlet />
+    </ContractContext>
   )
 }

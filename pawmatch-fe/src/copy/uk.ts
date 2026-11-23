@@ -1,4 +1,5 @@
 import { questionnaireCopy } from '@/copy/questionnaire.uk'
+import { resultsCopy } from '@/copy/results.uk'
 
 /**
  * Ukrainian UX copy. The frontend owns all wording; the backend only sends keys and codes.
@@ -6,6 +7,7 @@ import { questionnaireCopy } from '@/copy/questionnaire.uk'
  */
 export const copy = {
   questionnaire: questionnaireCopy,
+  results: resultsCopy,
   app: {
     name: 'PawMatch',
     tagline: 'Підбір породи собаки під ваш спосіб життя',

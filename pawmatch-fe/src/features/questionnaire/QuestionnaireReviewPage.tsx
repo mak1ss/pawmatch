@@ -1,9 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { Link, Navigate, useNavigate } from 'react-router'
 
 import { ApiError } from '@/api/client'
 import { useSubmitAnswers } from '@/api/questionnaire'
+import { recommendationKeys } from '@/api/recommendations'
 import type { FieldError } from '@/api/types'
 import { paths } from '@/app/routePaths'
 import { Container } from '@/components/layout/Container'
@@ -12,7 +14,7 @@ import { copy } from '@/copy/uk'
 import { FieldErrorText } from '@/features/questionnaire/components/QuestionField'
 import { Stepper } from '@/features/questionnaire/components/Stepper'
 import { errorMessage, formatAnswer } from '@/features/questionnaire/format'
-import { saveGuestSessionId } from '@/features/questionnaire/guestSession'
+import { readGuestSessionId, saveGuestSessionId } from '@/features/questionnaire/guestSession'
 import type { QuestionnaireValues, Step } from '@/features/questionnaire/model'
 import {
   firstIncompleteStep,
@@ -25,11 +27,15 @@ import {
 
 const t = copy.questionnaire
 
-/** Review before submitting (Figma "09 Перевірка відповідей"). Submits the answers and starts the guest session. */
+/**
+ * Review before submitting (Figma "09 Перевірка відповідей"). Saves the answers (new guest session, or the existing one's
+ * answers replaced) and opens the results, which compute recommendations for them.
+ */
 export function QuestionnaireReviewPage() {
   const navigate = useNavigate()
   const { getValues, setError } = useFormContext<QuestionnaireValues>()
   const submit = useSubmitAnswers()
+  const queryClient = useQueryClient()
   const [serverErrors, setServerErrors] = useState<FieldError[]>([])
 
   useEffect(() => {
@@ -44,10 +50,12 @@ export function QuestionnaireReviewPage() {
 
   const onSubmit = () => {
     setServerErrors([])
-    submit.mutate(toPayload(values), {
+    submit.mutate({ answers: toPayload(values), sessionId: readGuestSessionId() }, {
       onSuccess: (session) => {
         saveGuestSessionId(session.session_id)
-        navigate(paths.results)
+        // Results computed from older answers must not be shown from the cache.
+        queryClient.removeQueries({ queryKey: recommendationKeys.session(session.session_id) })
+        navigate(paths.results, { state: { answersVersion: session.answers_version } })
       },
       onError: (error) => {
         if (error instanceof ApiError && error.status === 422) {

@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 
-import { apiFetch } from '@/api/client'
+import { ApiError, apiFetch } from '@/api/client'
 
 /**
  * Questionnaire endpoints. Types mirror the backend contract (GET /api/v1/questionnaire) until they're generated
@@ -64,10 +64,24 @@ export function useQuestionnaireContract() {
   })
 }
 
-/** Starts a guest session with the given answers (POST /sessions). Rejects with ApiError; 422 carries field errors. */
+/**
+ * Saves the answers. With a session id it replaces that session's answers (PUT /sessions/{id}/answers), so changing
+ * answers keeps the session; without one, or when that session has expired (404), it starts a new session
+ * (POST /sessions). Rejects with ApiError; 422 carries field errors.
+ */
 export function useSubmitAnswers() {
   return useMutation({
-    mutationFn: (answers: AnswersPayload) =>
-      apiFetch<SubmittedAnswers>('/api/v1/sessions', { method: 'POST', body: JSON.stringify(answers) }),
+    mutationFn: async ({ answers, sessionId }: { answers: AnswersPayload; sessionId: string | null }) => {
+      const body = JSON.stringify(answers)
+      if (sessionId) {
+        try {
+          const path = `/api/v1/sessions/${encodeURIComponent(sessionId)}/answers`
+          return await apiFetch<SubmittedAnswers>(path, { method: 'PUT', body })
+        } catch (error) {
+          if (!(error instanceof ApiError && error.status === 404)) throw error
+        }
+      }
+      return apiFetch<SubmittedAnswers>('/api/v1/sessions', { method: 'POST', body })
+    },
   })
 }

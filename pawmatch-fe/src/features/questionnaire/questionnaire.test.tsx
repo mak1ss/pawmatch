@@ -5,6 +5,7 @@ import { http, HttpResponse } from 'msw'
 import { API_BASE_URL } from '@/api/client'
 import { copy } from '@/copy/uk'
 import { readGuestSessionId } from '@/features/questionnaire/guestSession'
+import { recommendationRun } from '@/mocks/fixtures/recommendations'
 import { MOCK_SESSION_ID } from '@/mocks/handlers'
 import { server } from '@/mocks/server'
 import { renderRoute } from '@/test/render'
@@ -104,7 +105,7 @@ describe('questionnaire', () => {
     expect(screen.getByText('Квартира')).toBeInTheDocument()
     await u.click(screen.getByRole('button', { name: t.review.submit }))
 
-    expect(await screen.findByRole('heading', { name: copy.notFound.title })).toBeInTheDocument() // /results comes next
+    expect(await screen.findByRole('heading', { level: 1, name: copy.results.title })).toBeInTheDocument()
     expect(body).toEqual({
       activity_level: 3,
       shedding_tolerance: 2,
@@ -123,6 +124,35 @@ describe('questionnaire', () => {
       hard_limits: { shedding_level: 2 },
     })
     expect(readGuestSessionId()).toBe(MOCK_SESSION_ID)
+  })
+
+  it('changing answers from the results updates the same session and recomputes', async () => {
+    const u = user()
+    let put: { sessionId: unknown; body: unknown } | undefined
+    let posts = 0
+    server.use(
+      http.put(`${API_BASE_URL}/api/v1/sessions/:sessionId/answers`, async ({ params, request }) => {
+        put = { sessionId: params.sessionId, body: await request.json() }
+        return HttpResponse.json({ session_id: MOCK_SESSION_ID, answers_version: 2, questionnaire_version: '1.0.0', submitted_at: 'x' })
+      }),
+      http.post(`${API_BASE_URL}/api/v1/sessions/:sessionId/recommendations`, () => {
+        posts++
+        return HttpResponse.json({ ...recommendationRun, answers_version: posts }, { status: 201 })
+      }),
+    )
+    await answerEverything(u)
+    await u.click(screen.getByRole('button', { name: t.review.submit }))
+    await screen.findByRole('heading', { level: 1, name: copy.results.title })
+
+    await u.click(screen.getAllByRole('link', { name: copy.results.changeAnswers })[0]!)
+    // The review still has the answers.
+    expect(await screen.findByText('Квартира')).toBeInTheDocument()
+    await u.click(screen.getByRole('button', { name: t.review.submit }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: copy.results.title })).toBeInTheDocument()
+    expect(put?.sessionId).toBe(MOCK_SESSION_ID)
+    expect(put?.body).toMatchObject({ housing_type: 'apartment' })
+    expect(posts).toBe(2)
   })
 
   it('shows every 422 field error in our wording, linked to its step', async () => {

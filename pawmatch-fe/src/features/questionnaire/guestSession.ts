@@ -19,3 +19,12 @@ export function readGuestSessionId(): string | null {
     return null
   }
 }
+
+/** Forgets a session the backend no longer knows (404), so the next submit starts a new one. */
+export function clearGuestSessionId(): void {
+  try {
+    sessionStorage.removeItem(KEY)
+  } catch {
+    // Nothing stored when storage is unavailable.
+  }
+}

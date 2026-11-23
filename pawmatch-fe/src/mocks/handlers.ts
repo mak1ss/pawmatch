@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw'
 
 import { API_BASE_URL } from '@/api/client'
 import { questionnaireContract } from '@/mocks/fixtures/questionnaire'
+import { recommendationRun } from '@/mocks/fixtures/recommendations'
 
 const api = (path: string) => `${API_BASE_URL}/api/v1${path}`
 
@@ -24,6 +25,25 @@ export const handlers = [
         submitted_at: '2026-11-23T10:00:00Z',
       },
       { status: 201, headers: { Location: api(`/sessions/${MOCK_SESSION_ID}/answers`) } },
+    ),
+  ),
+  http.put(api('/sessions/:sessionId/answers'), ({ params }) =>
+    HttpResponse.json({
+      session_id: params.sessionId,
+      answers_version: 2,
+      questionnaire_version: questionnaireContract.version,
+      submitted_at: '2026-11-23T10:05:00Z',
+    }),
+  ),
+  // Recommendations: the real baseline output for the example profile, whatever the answers.
+  http.post(api('/sessions/:sessionId/recommendations'), ({ params }) =>
+    HttpResponse.json({ ...recommendationRun, session_id: params.sessionId }, { status: 201 }),
+  ),
+  // No stored run yet: the results screen then runs the model (POST above).
+  http.get(api('/sessions/:sessionId/recommendations/latest'), () =>
+    HttpResponse.json(
+      { type: 'about:blank', title: 'Not Found', status: 404, detail: 'No recommendation run yet' },
+      { status: 404, headers: { 'Content-Type': 'application/problem+json' } },
     ),
   ),
 ]

@@ -8,5 +8,8 @@ export const paths = {
   questionnaireReview: '/questionnaire/review',
   results: '/results',
   compare: '/compare',
+  /** Compare screen preselected with these breeds (slugs). */
+  compareBreeds: (slugs: string[]) => `/compare?breeds=${slugs.map(encodeURIComponent).join(',')}`,
+  breed: (slug: string) => `/breeds/${encodeURIComponent(slug)}`,
   login: '/login',
 } as const
