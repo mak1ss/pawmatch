@@ -1,13 +1,6 @@
 package com.pawmatch.recommendation.adapter.in.web;
 
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.pawmatch.catalog.application.port.in.ListBreedsUseCase;
-import com.pawmatch.catalog.domain.Breed;
-import com.pawmatch.common.kernel.ResourceNotFoundException;
 import com.pawmatch.recommendation.application.port.in.GetLatestRecommendationUseCase;
 import com.pawmatch.recommendation.application.port.in.RecommendUseCase;
 import com.pawmatch.recommendation.domain.RecommendationRun;
@@ -25,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * Recommendations for a questionnaire session. Flow: submit answers ({@code POST /sessions}), then
@@ -60,7 +52,7 @@ class RecommendationController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     RecommendationRunResponse create(@PathVariable String sessionId) {
-        return toResponse(recommend.recommend(parseId(sessionId)));
+        return toResponse(recommend.recommend(SessionIds.parse(sessionId)));
     }
 
     @Operation(summary = "Get the session's latest recommendation run",
@@ -71,25 +63,10 @@ class RecommendationController {
             examples = @ExampleObject(name = "example-profile", ref = RUN_EXAMPLE)))
     @GetMapping("/latest")
     RecommendationRunResponse latest(@PathVariable String sessionId) {
-        return toResponse(latestRecommendation.getLatestRecommendation(parseId(sessionId)));
+        return toResponse(latestRecommendation.getLatestRecommendation(SessionIds.parse(sessionId)));
     }
 
     private RecommendationRunResponse toResponse(RecommendationRun run) {
-        Set<String> withImage = listBreeds.listBreeds().stream()
-                .filter(Breed::hasImage).map(Breed::slug).collect(Collectors.toSet());
-        Function<String, String> imageUrl = slug -> withImage.contains(slug)
-                ? ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/api/v1/breeds/{slug}/image").buildAndExpand(slug).toUriString()
-                : null;
-        return RecommendationRunResponse.from(run, imageUrl);
-    }
-
-    /** A malformed id can't match any session, so it gets the same 404 as an unknown one. */
-    private static UUID parseId(String sessionId) {
-        try {
-            return UUID.fromString(sessionId);
-        } catch (IllegalArgumentException e) {
-            throw new ResourceNotFoundException("questionnaire_session", sessionId);
-        }
+        return RecommendationRunResponse.from(run, BreedImageUrls.resolver(listBreeds));
     }
 }

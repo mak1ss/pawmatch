@@ -15,7 +15,8 @@ popularity. The target users are future owners, first-time owners and experience
 The user answers a lifestyle questionnaire and gets **3–5 breeds**. Each breed has a **compatibility index from 0 to 100**,
 with reasons and warnings. The user can then open breed cards and compare breeds.
 
-The index is **not a probability** of success. Every recommendation response must say so (`score_meaning`).
+The index is **not a probability** of success. Every recommendation run response must say so (`score_meaning`).
+The compare response doesn't carry it; the frontend shows the disclaimer on the compare screen from its own copy.
 
 ## MVP scope (backend)
 
@@ -34,7 +35,8 @@ The current work. Do not build anything outside this list without being asked.
   - threshold ≥ 60, at most 5 breeds, sorted by index;
   - if fewer than 3 breeds pass, return only those plus a notice, and never pad with weak matches;
   - when the user changes answers, create a new answers version and a new recommendation run.
-- **Compare**: 2–5 breeds scored against the session's latest answers. Excluded breeds show the reason and no index.
+- **Compare**: 2–5 breeds (`breed_ids`, slugs) scored against the session's latest answers, in the requested order.
+  Excluded breeds show the reason and no index. Compare results are computed on request and **not stored**.
 - **Feedback**: anonymous useful / not useful, one per recommendation run.
 - **Monitoring**: p95 latency, error count, fallback count. API target: p95 ≤ 1 s at 10 concurrent requests.
 
